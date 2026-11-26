@@ -407,7 +407,7 @@ function render(){
   const ov=mode==='end'?`<div class="ov"><div class="box"><div class="big">${msg}</div><button class="btn" onclick="init()">Сыграть ещё</button></div></div>`:'';
   document.getElementById('app').innerHTML=
    `<div class="hd"><b>🃏 Durak<small>${perev?'переводной':'подкидной'} · ${wins}:${losses}</small></b><span class="hr">${coinBadge()}<button class="mbtn lbb" onclick="openShop()" title="Магазин" aria-label="Магазин">🛒</button><button class="mbtn lbb" onclick="openLeaders()" title="Лидеры" aria-label="Таблица лидеров">🏆</button><button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>
-    <div class="pl"><div class="av"><img src="${BOTAV}" alt="Бот"><em>${B.length}</em></div><div class="nm">Бот${live?' · '+(att==='b'?'атакует':'отбивается'):''}</div><div class="row bot">${botRow}</div></div>
+    <div class="pl"><div class="av"><img src="${BOTAV}" alt="Бот"><em>${B.length}</em></div><div class="nm">Бот</div><div class="row bot">${botRow}</div></div>
     <div class="table">${dk}<div class="tcards">${tb||''}</div></div>
     <div class="pill">${msg}</div>
     <div class="acts">${acts}</div>
