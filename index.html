@@ -104,12 +104,16 @@ button.c.deal,.c.deal{animation:deal .42s cubic-bezier(.2,.8,.3,1) backwards}
 .bgimg .pill,.bgimg .opp{background:#000a}
 .bgimg .hd b,.bgimg .nm,.bgimg .tl{text-shadow:0 1px 3px #000}
 .bgimg .av{background:#0007}
+.hr{display:flex;align-items:center;gap:8px}
+.coin{display:inline-flex;align-items:center;gap:6px;background:#0007;border:1px solid #f5c84255;border-radius:20px;padding:4px 12px 4px 5px;font:700 15px system-ui,sans-serif;color:#ffe08a;cursor:pointer}
+.coin .kz{width:24px;height:24px}
 .hd b small{display:block;font-size:11px;font-weight:400;opacity:.7;letter-spacing:0}
 </style></head>
 <body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <symbol id="p0" viewBox="0 0 24 24"><path d="M12 2C12 2 4 8 4 13.5a4.2 4.2 0 0 0 7.2 2.9C11 18.5 10.3 20.3 8.8 22h6.4c-1.5-1.7-2.2-3.5-2.4-5.6A4.2 4.2 0 0 0 20 13.5C20 8 12 2 12 2z"/></symbol>
 <symbol id="p1" viewBox="0 0 24 24"><path d="M12 21.5S4 16 4 10.3a4.3 4.3 0 0 1 8-2.2 4.3 4.3 0 0 1 8 2.2C20 16 12 21.5 12 21.5z"/></symbol>
 <symbol id="p2" viewBox="0 0 24 24"><path d="M12 2l7.5 10L12 22 4.5 12z"/></symbol>
+<symbol id="kz" viewBox="0 0 40 40"><circle cx="20" cy="20" r="19" fill="#a87a00"/><circle cx="20" cy="20" r="16.5" fill="#e0ae17"/><circle cx="20" cy="20" r="13.5" fill="#f5c842" stroke="#a87a00" stroke-width="1"/><path d="M12.5 25 L11.5 15.5 L16.3 19.6 L20 12.5 L23.7 19.6 L28.5 15.5 L27.5 25 Z" fill="#a87a00"/><rect x="12.5" y="26" width="15" height="2.6" rx="1" fill="#a87a00"/></symbol>
 <symbol id="p3" viewBox="0 0 24 24"><circle cx="12" cy="7.5" r="4.6"/><circle cx="6.8" cy="14" r="4.6"/><circle cx="17.2" cy="14" r="4.6"/><circle cx="12" cy="12.5" r="3.5"/><path d="M12 12.5c0 3.5-.8 6.5-3.2 9.5h6.4c-2.4-3-3.2-6-3.2-9.5z"/></symbol>
 </defs></svg>
 <main id="app"></main>
@@ -343,7 +347,7 @@ function render(){
   const live=mode!=='end';
   const ov=mode==='end'?`<div class="ov"><div class="box"><div class="big">${msg}</div><button class="btn" onclick="init()">Сыграть ещё</button></div></div>`:'';
   document.getElementById('app').innerHTML=
-   `<div class="hd"><b>🃏 Дурак<small>${perev?'переводной':'подкидной'} · ${wins}:${losses}</small></b><button class="mbtn" onclick="openMenu()">☰ Меню</button></div>
+   `<div class="hd"><b>🃏 Дурак<small>${perev?'переводной':'подкидной'} · ${wins}:${losses}</small></b><span class="hr">${coinBadge()}<button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>
     <div class="pl"><div class="av">🤖<em>${B.length}</em></div><div class="nm">Бот${live?' · '+(att==='b'?'атакует':'отбивается'):''}</div><div class="row bot">${botRow}</div></div>
     <div class="table">${dk}<div class="tcards">${tb||'<div class="empty">Стол пуст</div>'}</div></div>
     <div class="pill">${msg}</div>
@@ -368,11 +372,170 @@ function applyBg(){
 }
 applyBg();
 function setBg(){bgi=bgi+1>=BGS.length?-1:bgi+1;applyBg();try{localStorage.setItem('bgn',bgi<0?'off':BGS[bgi][0])}catch(e){}}
+/* ===== ACCOUNT (nick + password + recovery code) ===== */
+let ACC=null,fbAuth=null,accUnsub=null,authReadyRes;
+const authReady=new Promise(r=>authReadyRes=r);
+const enc8=new TextEncoder();
+const b64=a=>btoa(String.fromCharCode(...new Uint8Array(a)));
+const ub64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const nickId=n=>'p'+[...enc8.encode(String(n).trim().toLowerCase())].map(b=>b.toString(16).padStart(2,'0')).join('');
+const nickMail=n=>nickId(n)+'@players.durak.game';
+function genCode(){
+  const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',r=crypto.getRandomValues(new Uint8Array(12));
+  let s='';r.forEach((v,i)=>{s+=A[v%32];if(i%4===3&&i<11)s+='-'});return 'KOZYR-'+s;
+}
+async function pwKey(pw,salt){
+  const k=await crypto.subtle.importKey('raw',enc8.encode(pw),'PBKDF2',false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:250000,hash:'SHA-256'},k,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+}
+async function sealCode(code,pw){
+  const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
+  const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},await pwKey(pw,salt),enc8.encode(code));
+  return {salt:b64(salt),iv:b64(iv),ct:b64(ct)};
+}
+async function openCode(rec,pw){
+  const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:ub64(rec.iv)},await pwKey(pw,ub64(rec.salt)),ub64(rec.ct));
+  return new TextDecoder().decode(pt);
+}
+async function getAuth(){
+  if(fbAuth)return fbAuth;
+  const db=await getDb();
+  if(!db||!window.firebase||!firebase.auth){authReadyRes();return null}
+  fbAuth=firebase.auth();
+  fbAuth.onAuthStateChanged(onAuth);
+  return fbAuth;
+}
+function onAuth(user){
+  if(accUnsub){accUnsub();accUnsub=null}
+  if(!user){ACC=null;authReadyRes();accRefresh();return}
+  const ref=firebase.database().ref('users/'+user.uid);
+  const h=s=>{const v=s.val()||{};ACC={uid:user.uid,nick:v.nick||'…',coins:+v.coins||0};
+    if(v.nick){try{localStorage.setItem('oname',v.nick)}catch(e){}}
+    authReadyRes();accRefresh()};
+  ref.on('value',h,()=>{authReadyRes()});accUnsub=()=>ref.off('value',h);
+}
+function accRefresh(){
+  if(G)oRender();else if(mode)render();
+  if(document.getElementById('menu'))openMenu();
+  const pv=document.getElementById('accov');if(pv&&pv.dataset.view==='profile')openAccount('profile');
+}
+const KZ='<svg class="kz" viewBox="0 0 40 40"><use href="#kz"/></svg>';
+function coinBadge(){return ACC?`<span class="coin" onclick="openAccount('profile')" title="Козыри">${KZ}${ACC.coins}</span>`:''}
+async function accRegister(nick,pw,pw2){
+  nick=nick.trim();
+  if(!/^[A-Za-zА-Яа-яЁё0-9_-]{3,12}$/.test(nick))return {err:'Ник: от 3 до 12 символов — буквы, цифры, _ или -.'};
+  if(pw.length<6)return {err:'Пароль: минимум 6 символов.'};
+  if(pw!==pw2)return {err:'Пароли не совпадают.'};
+  const auth=await getAuth();if(!auth)return {err:'Нет связи с сервером игры.'};
+  const db=firebase.database(),id=nickId(nick);
+  try{if((await db.ref('accounts/'+id).get()).exists())return {err:'Этот ник уже занят.'}}catch(e){return {err:'Нет связи с сервером игры.'}}
+  const code=genCode();let cred;
+  try{cred=await auth.createUserWithEmailAndPassword(nickMail(nick),code)}
+  catch(e){return {err:e.code==='auth/email-already-in-use'?'Этот ник уже занят.':'Не удалось зарегистрироваться. Проверьте интернет.'}}
+  const uid=cred.user.uid;let bonus=30;try{if(localStorage.getItem('regBonus'))bonus=0}catch(e){}
+  try{
+    await db.ref('accounts/'+id).set({uid,...await sealCode(code,pw)});
+    await db.ref('users/'+uid).set({nick,coins:bonus,created:firebase.database.ServerValue.TIMESTAMP});
+  }catch(e){try{await cred.user.delete()}catch(e2){}return {err:'Не удалось сохранить аккаунт. Попробуйте ещё раз.'}}
+  try{localStorage.setItem('regBonus','1')}catch(e){}
+  return {code,bonus};
+}
+async function accLogin(nick,pw){
+  const auth=await getAuth();if(!auth)return 'Нет связи с сервером игры.';
+  let s;try{s=await firebase.database().ref('accounts/'+nickId(nick)).get()}catch(e){return 'Нет связи с сервером игры.'}
+  if(!s.exists())return 'Игрок с таким ником не найден.';
+  let code;try{code=await openCode(s.val(),pw)}catch(e){return 'Неверный пароль.'}
+  try{await auth.signInWithEmailAndPassword(nickMail(nick),code)}catch(e){return 'Не удалось войти. Проверьте интернет.'}
+  return '';
+}
+async function accRecover(nick,code,pw,pw2){
+  if(pw.length<6)return 'Новый пароль: минимум 6 символов.';
+  if(pw!==pw2)return 'Пароли не совпадают.';
+  const auth=await getAuth();if(!auth)return 'Нет связи с сервером игры.';
+  code=code.trim().toUpperCase().replace(/\s+/g,'');if(!code.startsWith('KOZYR-'))code='KOZYR-'+code;
+  try{await auth.signInWithEmailAndPassword(nickMail(nick),code)}catch(e){return 'Неверный ник или код восстановления.'}
+  try{await firebase.database().ref('accounts/'+nickId(nick)).update(await sealCode(code,pw))}catch(e){return 'Не удалось сохранить новый пароль.'}
+  return '';
+}
+async function accLogout(){try{const a=await getAuth();if(a)await a.signOut()}catch(e){}closeAccount()}
+function closeAccount(){document.getElementById('accov')?.remove()}
+const IN='style="font:600 18px system-ui,sans-serif;text-align:center;padding:10px;border-radius:10px;border:0;width:240px;margin:0 auto;box-sizing:border-box"';
+function openAccount(view){
+  closeAccount();closeMenu();
+  view=view||(ACC?'profile':'welcome');
+  const d=document.createElement('div');d.className='ov';d.id='accov';d.dataset.view=view;
+  const x=`<button class="ic" style="position:absolute;right:10px;top:10px;margin:0" onclick="closeAccount()" aria-label="Закрыть">✕</button>`;
+  const err='<div id="accerr" class="nm" style="color:#ffb3b3;min-height:18px"></div>';
+  const link=(t,v)=>`<button onclick="openAccount('${v}')" style="background:none;border:0;color:#ffd54a;font:600 14px system-ui,sans-serif;cursor:pointer;text-decoration:underline">${t}</button>`;
+  let h='';
+  if(view==='welcome')h=`<div class="big">Добро пожаловать! 🃏</div>
+    <div class="nm" style="font-size:15px">Зарегистрируйтесь и получите <b>30 козырей</b> ${KZ.replace('class="kz"','class="kz" style="width:20px;height:20px;vertical-align:-4px"')}</div>
+    <button class="btn" onclick="openAccount('register')">Зарегистрироваться</button>
+    <button class="btn" style="background:#fff2;color:var(--fg);box-shadow:none" onclick="openAccount('login')">Войти</button>
+    ${link('Играть как гость','guest')}`;
+  else if(view==='register')h=`<div class="big">Регистрация</div>
+    <input id="a1" ${IN} maxlength="12" placeholder="Ник" autocomplete="username">
+    <input id="a2" ${IN} type="password" placeholder="Пароль (от 6 символов)" autocomplete="new-password">
+    <input id="a3" ${IN} type="password" placeholder="Повторите пароль" autocomplete="new-password">
+    ${err}<button class="btn" id="ago">Создать аккаунт</button>${link('Уже есть аккаунт? Войти','login')}`;
+  else if(view==='login')h=`<div class="big">Вход</div>
+    <input id="a1" ${IN} maxlength="12" placeholder="Ник" autocomplete="username">
+    <input id="a2" ${IN} type="password" placeholder="Пароль" autocomplete="current-password">
+    ${err}<button class="btn" id="ago">Войти</button>${link('Забыли пароль?','recover')}${link('Нет аккаунта? Регистрация','register')}`;
+  else if(view==='recover')h=`<div class="big">Восстановление</div>
+    <div class="nm">Введите ник, код восстановления и новый пароль.</div>
+    <input id="a1" ${IN} maxlength="12" placeholder="Ник" autocomplete="username">
+    <input id="a4" ${IN} placeholder="KOZYR-XXXX-XXXX-XXXX" autocomplete="off" style="font:600 16px ui-monospace,monospace;text-align:center;padding:10px;border-radius:10px;border:0;width:240px;margin:0 auto;box-sizing:border-box;text-transform:uppercase">
+    <input id="a2" ${IN} type="password" placeholder="Новый пароль" autocomplete="new-password">
+    <input id="a3" ${IN} type="password" placeholder="Повторите пароль" autocomplete="new-password">
+    ${err}<button class="btn" id="ago">Сменить пароль</button>${link('Назад ко входу','login')}`;
+  else if(view==='profile'&&ACC)h=`<div class="av" style="margin:0 auto;width:64px;height:64px;font-size:34px">🙂</div>
+    <div class="big">${esc(ACC.nick)}</div>
+    <div class="coin" style="align-self:center;font-size:20px;padding:6px 16px 6px 8px;cursor:default">${KZ.replace('class="kz"','class="kz" style="width:28px;height:28px"')}${ACC.coins} козырей</div>
+    <div class="nm">Козыри зарабатываются в игре.</div>
+    <button class="btn" style="background:#fff2;color:var(--fg);box-shadow:none" onclick="accLogout()">Выйти из аккаунта</button>`;
+  else if(view==='guest'){closeAccount();askName(true);return}
+  else if(view.startsWith('code:'))h='';
+  if(view==='profile'&&!ACC)return openAccount('welcome');
+  d.innerHTML=`<div class="box" style="position:relative;min-width:270px;max-width:calc(100vw - 40px);box-sizing:border-box;gap:14px">${view==='code'?'':x}${h}</div>`;
+  document.body.appendChild(d);
+  d.onclick=e=>{if(e.target===d&&view!=='code')closeAccount()};
+  const go=d.querySelector('#ago'),v=id=>(d.querySelector(id)||{}).value||'',say=t=>{d.querySelector('#accerr').textContent=t};
+  setTimeout(()=>d.querySelector('input')?.focus(),50);
+  d.querySelectorAll('input').forEach(i=>i.onkeydown=e=>{if(e.key==='Enter')go?.click()});
+  if(!go)return;
+  go.onclick=async()=>{
+    go.disabled=true;const t=go.textContent;go.textContent='Подождите…';say('');
+    try{
+      if(view==='register'){const r=await accRegister(v('#a1'),v('#a2'),v('#a3'));if(r.err)say(r.err);else return showCode(r.code,r.bonus)}
+      else if(view==='login'){const e=await accLogin(v('#a1'),v('#a2'));if(e)say(e);else return closeAccount()}
+      else if(view==='recover'){const e=await accRecover(v('#a1'),v('#a4'),v('#a2'),v('#a3'));if(e)say(e);else{closeAccount();return openAccount('profile')}}
+    }catch(e){say('Что-то пошло не так. Попробуйте ещё раз.')}
+    go.disabled=false;go.textContent=t;
+  };
+}
+function showCode(code,bonus){
+  closeAccount();
+  const d=document.createElement('div');d.className='ov';d.id='accov';d.dataset.view='code';
+  d.innerHTML=`<div class="box" style="min-width:270px;max-width:calc(100vw - 40px);box-sizing:border-box;gap:14px">
+    <div class="big">Аккаунт создан! 🎉</div>
+    ${bonus?`<div class="nm" style="font-size:15px">Вам начислено <b>${bonus} козырей</b></div>`:''}
+    <div class="nm" style="font-size:15px">Ваш <b>код восстановления</b>. Он нужен, если забудете пароль.<br>Сохраните его или сделайте скриншот — показан <b>только один раз</b>.</div>
+    <div style="font:700 20px ui-monospace,monospace;letter-spacing:1px;background:#0006;border:2px dashed #ffd54a;border-radius:12px;padding:12px;user-select:all">${code}</div>
+    <button class="btn" style="background:#fff2;color:var(--fg);box-shadow:none" id="acopy">Скопировать код</button>
+    <label class="nm" style="font-size:15px;display:flex;gap:10px;align-items:center;justify-content:center;cursor:pointer"><input type="checkbox" id="asaved" style="width:20px;height:20px">Я сохранил код</label>
+    <button class="btn" id="adone" disabled style="opacity:.5">Готово</button></div>`;
+  document.body.appendChild(d);
+  const done=d.querySelector('#adone');
+  d.querySelector('#asaved').onchange=e=>{done.disabled=!e.target.checked;done.style.opacity=e.target.checked?1:.5};
+  d.querySelector('#acopy').onclick=async e=>{try{await navigator.clipboard.writeText(code);e.target.textContent='Скопировано ✔'}catch(x){e.target.textContent='Выделите код и скопируйте'}};
+  done.onclick=()=>closeAccount();
+}
 /* ===== MENU ===== */
 const TCN={green:'зелёный',blue:'синий',red:'красный',purple:'фиолетовый',gray:'графит'};
 function menuItems(){
   const common=[
-    ['👤','Никнейм',pName()==='Вы'?'не задан':pName(),'askName()',1],
+    ['👤','Аккаунт',ACC?ACC.nick:'гость','openAccount()',1],
     ['🎨','Цвет стола',TCN[TC[tcol]],'setTable()',0],
     ['🖼️','Фон',bgi<0?'без фона':BGS[bgi][1],'setBg()',0],
     ['🎴','Вид карт',theme==='black'?'чёрные':'белые','setCards()',0],
@@ -442,6 +605,7 @@ function getDb(){
       if(!window.firebase){
         await loadJS(`https://www.gstatic.com/firebasejs/${FB_V}/firebase-app-compat.js`);
         await loadJS(`https://www.gstatic.com/firebasejs/${FB_V}/firebase-database-compat.js`);
+        await loadJS(`https://www.gstatic.com/firebasejs/${FB_V}/firebase-auth-compat.js`);
       }
       if(!firebase.apps.length)firebase.initializeApp(FB_CONFIG);
       const db=firebase.database();
@@ -576,6 +740,7 @@ async function lobby(){
   <div class="nm">Игроков в новой игре:</div><div class="seg">${[2,3,4].map(k=>`<button class="segb${k===onp?' on':''}" data-k="${k}" onclick="setNp(${k})">${k}</button>`).join('')}</div>
   <button class="btn" onclick="oCreate()">Создать игру</button><div class="nm">или введите код друга:</div><input id="oc" maxlength="4" inputmode="numeric" placeholder="0000" autocomplete="off" style="font:700 26px system-ui,sans-serif;text-align:center;padding:8px;border-radius:10px;border:0;width:150px;margin:0 auto"><button class="btn" onclick="oJoin()">Войти</button><div id="om" class="nm">Подключение…</div></div>`;
   try{const n=localStorage.getItem('oname');if(n)document.getElementById('on').value=n}catch(e){}
+  if(ACC){const o=document.getElementById('on');o.value=ACC.nick;o.disabled=true;o.style.opacity=.7}
   odb=odb||await getDb();
   const m=document.getElementById('om');
   if(m)m.textContent=odb?'':'Нет связи с сервером игры. Проверьте интернет и попробуйте снова.';
@@ -686,7 +851,7 @@ function oRender(){
   <div class="pl"><div class="av${myCls}">${EM[me]}<em>${mine.length}</em></div><div class="nm">${esc(pn(g,me))} (вы)${status(me)?' · '+status(me):''}</div></div>
   <div class="row hand" style="--ov:${ovl}px">${hand}</div>${end}`;
   }
-  $a().innerHTML=`<div class="hd"><b>🌐 Дурак онлайн<small>${g.perev?'переводной':'подкидной'} · ${g.np} игрока · код ${ocode}</small></b><button class="mbtn" onclick="openMenu()">☰ Меню</button></div>${body}`;
+  $a().innerHTML=`<div class="hd"><b>🌐 Дурак онлайн<small>${g.perev?'переводной':'подкидной'} · ${g.np} игрока · код ${ocode}</small></b><span class="hr">${coinBadge()}<button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>${body}`;
 }
 async function oResume(){
   let v;try{v=localStorage.getItem('osess')}catch(e){}
@@ -699,6 +864,6 @@ async function oResume(){
   }catch(e){}
 }
 init();oResume();
-try{if(!localStorage.getItem('oname'))askName(true)}catch(e){}
+getAuth();authReady.then(()=>{try{if(!ACC&&!localStorage.getItem('oname'))openAccount('welcome')}catch(e){}});setTimeout(()=>authReadyRes(),8000);
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script></body></html>
