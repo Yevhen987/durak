@@ -89,6 +89,14 @@ button.c.deal,.c.deal{animation:deal .42s cubic-bezier(.2,.8,.3,1) backwards}
 .seg{display:flex;gap:8px;justify-content:center}
 .segb{width:52px;height:42px;border-radius:10px;border:0;background:#fff2;color:var(--fg);font:700 18px system-ui,sans-serif;cursor:pointer}
 .segb.on{background:#f5b301;color:#2b2200}
+.mbtn{background:#fff2;color:var(--fg);border:0;border-radius:10px;height:40px;padding:0 16px;font:700 15px system-ui,sans-serif;cursor:pointer}
+.mbtn:active{transform:translateY(1px)}
+.menu{position:fixed;inset:0;z-index:6;background:#0006}
+.menu .mp{position:absolute;top:calc(58px + env(safe-area-inset-top,0px));right:max(12px,calc(50% - 268px));background:var(--felt2);border:3px solid var(--wood);border-radius:16px;padding:8px;display:flex;flex-direction:column;min-width:250px;box-shadow:0 10px 30px #000a;animation:pop .2s ease-out}
+.menu .mi{display:flex;align-items:center;gap:12px;background:none;border:0;color:var(--fg);font:600 16px system-ui,sans-serif;padding:11px 12px;border-radius:10px;text-align:left;cursor:pointer}
+.menu .mi:hover,.menu .mi:active{background:#fff1}
+.menu .mi span{font-size:20px;width:26px;text-align:center}
+.menu .mi small{margin-left:auto;opacity:.65;font-size:12px;padding-left:10px}
 .hd b small{display:block;font-size:11px;font-weight:400;opacity:.7;letter-spacing:0}
 </style></head>
 <body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -267,7 +275,7 @@ function setMode(){
 function setMute(){
   muted=!muted;
   try{localStorage.setItem('muted',muted?'1':'0')}catch(e){}
-  render();
+  G?oRender():render();
 }
 const TC=['green','blue','red','purple','gray'];let tcol=4;
 function setTable(){
@@ -279,7 +287,7 @@ function setCards(){
   theme=theme==='black'?'classic':'black';
   document.documentElement.dataset.cards=theme;
   try{localStorage.setItem('cards',theme)}catch(e){}
-  render();
+  G?oRender():render();
 }
 let shown=new Set(),handSeen=new Set(),oppSeen=0;
 function sweepFX(kind){
@@ -328,7 +336,7 @@ function render(){
   const live=mode!=='end';
   const ov=mode==='end'?`<div class="ov"><div class="box"><div class="big">${msg}</div><button class="btn" onclick="init()">Сыграть ещё</button></div></div>`:'';
   document.getElementById('app').innerHTML=
-   `<div class="hd"><b>🃏 Дурак<small>${perev?'переводной':'подкидной'} · ${wins}:${losses}</small></b><span><button class="ic" onclick="askName()" title="Никнейм">👤</button><button class="ic" onclick="setTable()" title="Цвет стола">🎨</button><button class="ic" onclick="setCards()" title="Вид карт">🎴</button><button class="ic" onclick="setMode()" title="Режим игры">🔀</button><button class="ic" onclick="setMute()" title="Звук">${muted?'🔇':'🔊'}</button><button class="ic" onclick="lobby()" title="Онлайн">🌐</button><button class="ic" onclick="showHint()" title="Подсказка">💡</button><button class="ic" onclick="init()" title="Новая игра">↻</button></span></div>
+   `<div class="hd"><b>🃏 Дурак<small>${perev?'переводной':'подкидной'} · ${wins}:${losses}</small></b><button class="mbtn" onclick="openMenu()">☰ Меню</button></div>
     <div class="pl"><div class="av">🤖<em>${B.length}</em></div><div class="nm">Бот${live?' · '+(att==='b'?'атакует':'отбивается'):''}</div><div class="row bot">${botRow}</div></div>
     <div class="table">${dk}<div class="tcards">${tb||'<div class="empty">Стол пуст</div>'}</div></div>
     <div class="pill">${msg}</div>
@@ -342,6 +350,26 @@ try{const t=TC.indexOf(localStorage.getItem('table'));if(t>=0)tcol=t}catch(e){}
 document.documentElement.dataset.table=TC[tcol];
 try{perev=localStorage.getItem('perev')==='1';muted=localStorage.getItem('muted')==='1'}catch(e){}
 try{const s=(localStorage.getItem('score')||'0:0').split(':');wins=+s[0]||0;losses=+s[1]||0}catch(e){}
+/* ===== MENU ===== */
+const TCN={green:'зелёный',blue:'синий',red:'красный',purple:'фиолетовый',gray:'графит'};
+function menuItems(){
+  const common=[
+    ['👤','Никнейм',pName()==='Вы'?'не задан':pName(),'askName()',1],
+    ['🎨','Цвет стола',TCN[TC[tcol]],'setTable()',0],
+    ['🎴','Вид карт',theme==='black'?'чёрные':'белые','setCards()',0],
+    [muted?'🔇':'🔊','Звук',muted?'выкл':'вкл','setMute()',0]];
+  if(G)return [...common,['✕','Выйти из онлайн-игры','','oLeave()',1]];
+  return [['↻','Новая игра','','init()',1],['🌐','Онлайн-игра','2–4 игрока','lobby()',1],
+    ['🔀','Режим',perev?'переводной':'подкидной','setMode()',1],['💡','Подсказка','','showHint()',1],...common];
+}
+function openMenu(){
+  closeMenu();
+  const d=document.createElement('div');d.className='menu';d.id='menu';
+  d.onclick=e=>{if(e.target===d)closeMenu()};
+  d.innerHTML=`<div class="mp">${menuItems().map(([ic,t,sub,fn,cl])=>`<button class="mi" onclick="${cl?'closeMenu();':''}${fn};${cl?'':'openMenu()'}"><span>${ic}</span>${t}<small>${esc(sub)}</small></button>`).join('')}</div>`;
+  document.body.appendChild(d);
+}
+function closeMenu(){document.getElementById('menu')?.remove()}
 /* ===== NICKNAME ===== */
 function pName(){let n='';try{n=localStorage.getItem('oname')||''}catch(e){}return n||'Вы'}
 function askName(first){
@@ -629,7 +657,7 @@ function oRender(){
   <div class="pl"><div class="av${myCls}">${EM[me]}<em>${mine.length}</em></div><div class="nm">${esc(pn(g,me))} (вы)${status(me)?' · '+status(me):''}</div></div>
   <div class="row hand" style="--ov:${ovl}px">${hand}</div>${end}`;
   }
-  $a().innerHTML=`<div class="hd"><b>🌐 Дурак онлайн<small>${g.perev?'переводной':'подкидной'} · ${g.np} игрока · код ${ocode}</small></b><span><button class="ic" onclick="askName()" title="Никнейм">👤</button><button class="ic" onclick="oLeave()" title="Выйти">✕</button></span></div>${body}`;
+  $a().innerHTML=`<div class="hd"><b>🌐 Дурак онлайн<small>${g.perev?'переводной':'подкидной'} · ${g.np} игрока · код ${ocode}</small></b><button class="mbtn" onclick="openMenu()">☰ Меню</button></div>${body}`;
 }
 async function oResume(){
   let v;try{v=localStorage.getItem('osess')}catch(e){}
