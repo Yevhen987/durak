@@ -105,6 +105,7 @@ button.c.deal,.c.deal{animation:deal .42s cubic-bezier(.2,.8,.3,1) backwards}
 .bgimg .hd b,.bgimg .nm,.bgimg .tl{text-shadow:0 1px 3px #000}
 .bgimg .av{background:#0007}
 .hr{display:flex;align-items:center;gap:8px}
+.mbtn.lbb{padding:0;width:40px;font-size:19px}
 .coin{display:inline-flex;align-items:center;gap:6px;background:#0007;border:1px solid #f5c84255;border-radius:20px;padding:4px 12px 4px 5px;font:700 15px system-ui,sans-serif;color:#ffe08a;cursor:pointer}
 .coin .kz{width:24px;height:24px}
 .devb{display:inline-block;background:linear-gradient(90deg,#f5b301,#ff7a00);color:#2b1600;font:800 10px system-ui,sans-serif;letter-spacing:.5px;border-radius:6px;padding:2px 6px;vertical-align:1px;text-shadow:none}
@@ -355,7 +356,7 @@ function render(){
   const live=mode!=='end';
   const ov=mode==='end'?`<div class="ov"><div class="box"><div class="big">${msg}</div><button class="btn" onclick="init()">Сыграть ещё</button></div></div>`:'';
   document.getElementById('app').innerHTML=
-   `<div class="hd"><b>🃏 Дурак<small>${perev?'переводной':'подкидной'} · ${wins}:${losses}</small></b><span class="hr">${coinBadge()}<button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>
+   `<div class="hd"><b>🃏 Дурак<small>${perev?'переводной':'подкидной'} · ${wins}:${losses}</small></b><span class="hr">${coinBadge()}<button class="mbtn lbb" onclick="openLeaders()" title="Лидеры" aria-label="Таблица лидеров">🏆</button><button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>
     <div class="pl"><div class="av">🤖<em>${B.length}</em></div><div class="nm">Бот${live?' · '+(att==='b'?'атакует':'отбивается'):''}</div><div class="row bot">${botRow}</div></div>
     <div class="table">${dk}<div class="tcards">${tb||'<div class="empty">Стол пуст</div>'}</div></div>
     <div class="pill">${msg}</div>
@@ -908,7 +909,7 @@ function oRender(){
   <div class="pl"><div class="av${myCls}">${EM[me]}<em>${mine.length}</em></div><div class="nm">${esc(pn(g,me))} (вы)${ADMINS[g.u[me]]?' '+DEVB:''}${status(me)?' · '+status(me):''}</div></div>
   <div class="row hand" style="--ov:${ovl}px">${hand}</div>${end}`;
   }
-  $a().innerHTML=`<div class="hd"><b>🌐 Дурак онлайн<small>${g.perev?'переводной':'подкидной'} · ${g.np} игрока · код ${ocode}</small></b><span class="hr">${coinBadge()}<button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>${body}`;
+  $a().innerHTML=`<div class="hd"><b>🌐 Дурак онлайн<small>${g.perev?'переводной':'подкидной'} · ${g.np} игрока · код ${ocode}</small></b><span class="hr">${coinBadge()}<button class="mbtn lbb" onclick="openLeaders()" title="Лидеры" aria-label="Таблица лидеров">🏆</button><button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>${body}`;
 }
 async function oResume(){
   let v;try{v=localStorage.getItem('osess')}catch(e){}
