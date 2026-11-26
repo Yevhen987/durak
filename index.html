@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14452c"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png"><title>Дурак</title>
+<style>
+:root{--bg:#14452c;--fg:#fff;--felt1:#2f8f5d;--felt2:#1a5a39;--wood:#5a3a1e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e2f1f}}
+:root[data-theme="dark"]{--bg:#0e2f1f}
+:root[data-cards="black"]{--bg:#0e0f12;--felt1:#2d3037;--felt2:#16181c;--wood:#3b3d46}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:560px;margin:0 auto;padding:10px 12px 16px;display:flex;flex-direction:column;gap:10px}
+.hd{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px}
+.hd b{font-size:20px;letter-spacing:.5px}
+.tp{font-size:14px;background:#0004;border-radius:14px;padding:4px 12px}
+.tp i{font-style:normal;font-size:18px;vertical-align:-1px}.tp .rd{color:#ff6b6b}
+.ic{background:#fff2;color:var(--fg);border:0;border-radius:10px;width:38px;height:38px;font-size:18px;cursor:pointer;margin-left:6px}
+.pl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.nm{font-size:13px;opacity:.85}
+.av{position:relative;width:44px;height:44px;border-radius:50%;background:#fff2;border:2px solid #fff4;display:flex;align-items:center;justify-content:center;font-size:24px;flex:none}
+.av em{position:absolute;right:-8px;bottom:-4px;background:#f5b301;color:#2b2200;font:700 12px system-ui,sans-serif;border-radius:10px;padding:1px 7px}
+.row{display:flex;flex-wrap:wrap;align-items:center}
+.row.bot{margin-left:auto;padding-right:30px;min-height:78px}.row.bot .c{margin-right:-30px}
+.hand{justify-content:center;min-height:90px;padding-top:8px}
+.hand .c+.c{margin-left:var(--ov,-26px)}
+.c{width:54px;height:78px;border-radius:7px;position:relative;box-sizing:border-box;padding:0;margin:0;font-family:Georgia,"Times New Roman",serif;overflow:hidden;flex:none}
+.c.f{background:#fff;color:var(--k);border:1px solid #0003;box-shadow:0 2px 4px #0004}
+.s0,.s3{--k:#151515}.s1,.s2{--k:#d32f2f}
+.ix{position:absolute;left:4px;top:3px;display:flex;flex-direction:column;align-items:center;line-height:1;font-style:normal;gap:1px}
+.ix b{font-size:17px;font-weight:700}
+.ix svg{width:13px;height:13px}
+.ix.br{left:auto;top:auto;right:4px;bottom:3px;transform:rotate(180deg)}
+svg{fill:currentColor}
+.mid{position:absolute;left:50%;top:50%;width:32px;height:32px;margin:-14px 0 0 -16px}
+.c.b{background:repeating-linear-gradient(45deg,#2a4d9b 0 4px,#244389 4px 8px);border:3px solid #fff;color:#fff;display:flex;align-items:center;justify-content:center;font:700 18px system-ui,sans-serif;text-shadow:0 1px 2px #000a;box-shadow:0 2px 4px #0004}
+button.c{cursor:pointer;transition:transform .12s,filter .12s}
+.c.ok{box-shadow:0 0 0 2px #ffd54a,0 5px 9px #0006;transform:translateY(-6px)}
+.c.no{filter:brightness(.72)}
+button.c:active{transform:translateY(-12px)}
+.table{display:flex;gap:8px;align-items:flex-start;min-height:214px;padding:14px 10px;border:6px solid var(--wood);border-radius:20px;background:radial-gradient(ellipse at center,var(--felt1),var(--felt2) 75%);box-shadow:inset 0 0 36px #0008,0 8px 18px #0006}
+.tcards{flex:1;display:flex;flex-wrap:wrap;gap:10px;align-content:flex-start;justify-content:center}
+.empty{opacity:.5;align-self:center;font-size:14px;padding-top:70px}
+.pair{position:relative;width:70px;height:96px}
+.pair .c{position:absolute;left:0;top:0}
+.pair .d{left:14px;top:18px;box-shadow:-3px 3px 5px #0006}
+.deckbox{position:relative;width:104px;height:96px;flex:none;margin-top:8px}
+.deckbox .c{position:absolute}
+.deckbox .tr{left:40px;top:-12px;transform:rotate(90deg)}
+.tl{position:absolute;left:0;top:84px;font-size:12px;white-space:nowrap;opacity:.9}.tl.rd{color:#ff8a8a}
+.deckbox .dk{left:0;top:0}
+.dim{opacity:.5}
+.c.hl{outline:3px solid #7cfc00;outline-offset:1px}
+.pop{animation:pop .28s ease-out}
+@keyframes pop{from{transform:translateY(-34px) scale(.7);opacity:0}to{transform:none;opacity:1}}
+.pill{align-self:center;background:#0005;border-radius:20px;padding:8px 18px;font-size:15px;text-align:center;min-height:20px}
+.acts{display:flex;gap:10px;justify-content:center;min-height:46px}
+.btn{background:#f5b301;color:#2b2200;border:0;border-radius:12px;padding:12px 30px;font:700 16px system-ui,sans-serif;cursor:pointer;box-shadow:0 3px 0 #a87a00}
+.btn.red{background:#e5534b;color:#fff;box-shadow:0 3px 0 #9c2b25}
+.btn:active{transform:translateY(2px);box-shadow:none}
+.ov{position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;z-index:5;animation:pop .3s ease-out}
+.box{background:var(--felt2);border:4px solid var(--wood);border-radius:20px;padding:28px 34px;text-align:center;display:flex;flex-direction:column;gap:20px;box-shadow:0 10px 30px #000a}
+.big{font-size:26px;font-weight:700}
+html[data-cards="black"] .c.f{background:#0b0b0d;border:1px solid #fff3;box-shadow:inset 0 0 0 3px #0b0b0d,inset 0 0 0 4px #ffffff55,0 2px 5px #000a}
+html[data-cards="black"] .c.f.ok{box-shadow:inset 0 0 0 3px #0b0b0d,inset 0 0 0 4px #ffffff55,0 0 0 2px #ffd54a,0 5px 9px #000a}
+html[data-cards="black"] .ix{left:7px;top:6px}
+html[data-cards="black"] .ix.br{left:auto;top:auto;right:7px;bottom:6px}
+html[data-cards="black"] .s0{--k:#f1f1f1}
+html[data-cards="black"] .s1{--k:#ff8a1f}
+html[data-cards="black"] .s2{--k:#2fb4ff}
+html[data-cards="black"] .s3{--k:#35d07f}
+html[data-cards="black"] .c.b{background:repeating-linear-gradient(45deg,#1d1d21 0 3px,#0c0c0e 3px 6px);border:1px solid #fff4;box-shadow:inset 0 0 0 3px #0c0c0e,inset 0 0 0 4px #ffffff55,0 2px 5px #000a}
+:root[data-table="blue"]{--bg:#0f2347;--felt1:#3f7bd0;--felt2:#1c3d75;--wood:#3b2a14}
+:root[data-table="red"]{--bg:#2e0d17;--felt1:#b8384f;--felt2:#6a1830;--wood:#3b2a14}
+:root[data-table="purple"]{--bg:#1f1236;--felt1:#8056c8;--felt2:#432a78;--wood:#3b2a14}
+:root[data-table="gray"]{--bg:#121417;--felt1:#555b66;--felt2:#262a30;--wood:#6b4a26}
+.hd b small{display:block;font-size:11px;font-weight:400;opacity:.7;letter-spacing:0}
+</style></head>
+<body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="p0" viewBox="0 0 24 24"><path d="M12 2C12 2 4 8 4 13.5a4.2 4.2 0 0 0 7.2 2.9C11 18.5 10.3 20.3 8.8 22h6.4c-1.5-1.7-2.2-3.5-2.4-5.6A4.2 4.2 0 0 0 20 13.5C20 8 12 2 12 2z"/></symbol>
+<symbol id="p1" viewBox="0 0 24 24"><path d="M12 21.5S4 16 4 10.3a4.3 4.3 0 0 1 8-2.2 4.3 4.3 0 0 1 8 2.2C20 16 12 21.5 12 21.5z"/></symbol>
+<symbol id="p2" viewBox="0 0 24 24"><path d="M12 2l7.5 10L12 22 4.5 12z"/></symbol>
+<symbol id="p3" viewBox="0 0 24 24"><circle cx="12" cy="7.5" r="4.6"/><circle cx="6.8" cy="14" r="4.6"/><circle cx="17.2" cy="14" r="4.6"/><circle cx="12" cy="12.5" r="3.5"/><path d="M12 12.5c0 3.5-.8 6.5-3.2 9.5h6.4c-2.4-3-3.2-6-3.2-9.5z"/></symbol>
+</defs></svg>
+<main id="app"></main>
+<script>
+const S=['♠','♥','♦','♣'],N={11:'В',12:'Д',13:'К',14:'Т'};
+let deck,trump,P,B,table,att,mode,msg,limit,discard,gen=0,perev=false,muted=false,AC,wins=0,losses=0,hint='';
+const later=(f,ms)=>{const g=gen;setTimeout(()=>{if(g===gen)f()},ms)};
+const nm=c=>(N[c.r]||c.r)+S[c.s];
+const val=c=>c.r+(c.s===trump.s?100:0);
+const beats=(a,d)=>d.s===a.s?d.r>a.r:d.s===trump.s;
+const same=(a,b)=>a.s===b.s&&a.r===b.r;
+const ranks=()=>new Set(table.flatMap(t=>t.d?[t.a.r,t.d.r]:[t.a.r]));
+const draw=h=>{while(h.length<6&&deck.length)h.push(deck.pop())};
+const canXfer=(c,n)=>perev&&table.length>0&&table.every(t=>!t.d&&t.a.r===c.r)&&n>=table.length+1;
+function snd(k){
+  if(muted)return;
+  try{
+    AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+    if(AC.state==='suspended')AC.resume();
+    const t=AC.currentTime;
+    const tone=(f,d,type,v,at)=>{const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,t+at);g.gain.exponentialRampToValueAtTime(.001,t+at+d);o.connect(g);g.connect(AC.destination);o.start(t+at);o.stop(t+at+d)};
+    const noise=(d,f,v)=>{const n=AC.sampleRate*d|0,b=AC.createBuffer(1,n,AC.sampleRate),x=b.getChannelData(0);for(let i=0;i<n;i++)x[i]=(Math.random()*2-1)*(1-i/n);const s=AC.createBufferSource(),fl=AC.createBiquadFilter(),g=AC.createGain();fl.type='bandpass';fl.frequency.value=f;g.gain.value=v;s.buffer=b;s.connect(fl);fl.connect(g);g.connect(AC.destination);s.start(t)};
+    if(k==='card')noise(.07,2200,.3);
+    else if(k==='take'){noise(.2,900,.35);tone(120,.15,'sine',.2,0)}
+    else if(k==='sweep')noise(.25,1400,.25);
+    else if(k==='win')[523,659,784,1047].forEach((f,i)=>tone(f,.28,'triangle',.18,i*.12));
+    else if(k==='lose')[392,330,262,196].forEach((f,i)=>tone(f,.32,'sawtooth',.08,i*.15));
+  }catch(e){}
+}
+function pool(){
+  const out=[];
+  for(let s=0;s<4;s++)for(let r=6;r<=14;r++){
+    const c={s,r};
+    if(B.some(x=>same(x,c))||discard.some(x=>same(x,c)))continue;
+    if(table.some(t=>same(t.a,c)||(t.d&&same(t.d,c))))continue;
+    if(deck.length&&same(trump,c))continue;
+    out.push(c);
+  }
+  return out;
+}
+function botPick(){
+  const cnt=c=>B.filter(x=>x.r===c.r).length;
+  const sc=c=>val(c)-(c.s===trump.s?0:cnt(c)*1.5);
+  let opts=B.slice();
+  if(!deck.length){const pl=pool();const safe=opts.filter(c=>!pl.some(x=>beats(c,x)));if(safe.length)opts=safe}
+  return opts.sort((a,b)=>sc(a)-sc(b))[0];
+}
+function init(){
+  gen++;deck=[];discard=[];
+  for(let s=0;s<4;s++)for(let r=6;r<=14;r++)deck.push({s,r});
+  for(let i=deck.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[deck[i],deck[j]]=[deck[j],deck[i]]}
+  trump=deck[0];P=[];B=[];table=[];draw(P);draw(B);
+  const low=h=>Math.min(99,...h.filter(c=>c.s===trump.s).map(c=>c.r));
+  att=low(P)<=low(B)?'p':'b';
+  start('Новая игра.');
+}
+function start(m){hint='';
+  limit=Math.min(6,(att==='p'?B:P).length);
+  if(att==='b'){
+    mode='busy';msg=m+' Бот ходит…';render();
+    later(()=>{
+      const c=botPick();B.splice(B.indexOf(c),1);table.push({a:c});snd('card');
+      mode='pDef';msg='Отбейтесь картой'+(perev?', переведите':'')+' или возьмите.';render();
+    },700);
+  }else{mode='pAtk';msg=m+' Ваш ход.';render()}
+}
+function say(m){msg=m;render()}
+function showHint(){
+  if(!['pAtk','pDef','bTake'].includes(mode))return;
+  const o=P.filter(canPlay).sort((a,b)=>val(a)-val(b));
+  if(!o.length)return say(mode==='pDef'?'Подсказка: отбиться нечем, лучше взять карты.':mode==='pAtk'&&table.length?'Подсказка: подкинуть нечего, нажмите «Бито».':'Подсказка: подкидывать нечего.');
+  hint=ck(o[0]);render();
+}
+function play(i){hint='';
+  const c=P[i];
+  if(!c)return;
+  if(mode==='pAtk'||mode==='bTake'){
+    if(table.length&&!ranks().has(c.r))return say('Нужна карта того же достоинства, что на столе.');
+    if(table.length>=limit)return say('Больше карт подкинуть нельзя.');
+    P.splice(i,1);table.push({a:c});snd('card');
+    mode==='pAtk'?botDefend():render();
+  }else if(mode==='pDef'){
+    const t=table.find(t=>!t.d&&beats(t.a,c));
+    if(t){t.d=c;P.splice(i,1);snd('card');table.every(t=>t.d)?botAdd():render()}
+    else if(canXfer(c,B.length)){
+      P.splice(i,1);table.push({a:c});snd('card');att='p';limit=Math.min(6,B.length);
+      botDefend();
+    }else say(perev?'Эта карта не бьёт и не подходит для перевода.':'Эта карта не бьёт.');
+  }
+}
+function botDefend(){
+  mode='busy';msg='Бот думает…';render();
+  later(()=>{
+    const und=table.filter(t=>!t.d);
+    if(perev&&und.length===table.length){
+      const xs=B.filter(c=>c.s!==trump.s&&canXfer(c,P.length)).sort((a,b)=>val(a)-val(b));
+      if(xs.length){
+        const c=xs[0];B.splice(B.indexOf(c),1);table.push({a:c});snd('card');
+        att='b';limit=Math.min(6,P.length);mode='pDef';
+        msg='Бот перевёл. Отбейтесь, переведите или возьмите.';return render();
+      }
+    }
+    const used=[],plan=[];let ok=true;
+    for(const t of und){
+      const o=B.filter(c=>!used.includes(c)&&beats(t.a,c)).sort((a,b)=>val(a)-val(b));
+      if(!o.length){ok=false;break}
+      used.push(o[0]);plan.push([t,o[0]]);
+    }
+    if(ok&&deck.length>=6&&B.length<9&&plan.length===1){
+      const [t,c]=plan[0];
+      if(c.s===trump.s&&t.a.s!==trump.s&&(c.r>=11||B.filter(x=>x.s===trump.s).length<=2))ok=false;
+    }
+    let auto=false;
+    if(ok){
+      plan.forEach(([t,c])=>{t.d=c;B.splice(B.indexOf(c),1)});snd('card');
+      mode='pAtk';msg='Бот отбился. Подкиньте или нажмите «Бито».';
+      auto=!P.length||table.length>=limit;
+    }else{mode='bTake';msg='Бот берёт карты. Можете подкинуть, затем «Готово».'}
+    render();
+    if(auto)later(()=>endRound(false),800);
+  },700);
+}
+function botAdd(){
+  mode='busy';msg='Бот думает…';render();
+  later(()=>{
+    const rk=ranks();
+    const ok=B.filter(c=>rk.has(c.r)&&(c.s!==trump.s||!deck.length)).sort((a,b)=>val(a)-val(b));
+    if(ok.length&&table.length<limit){
+      B.splice(B.indexOf(ok[0]),1);table.push({a:ok[0]});snd('card');mode='pDef';
+      msg='Бот подкинул. Отбейтесь'+(perev?', переведите':'')+' или возьмите.';render();
+    }else endRound(false);
+  },700);
+}
+function take(){
+  while(table.length<limit){
+    const c=B.find(c=>ranks().has(c.r)&&(c.s!==trump.s||!deck.length));
+    if(!c)break;B.splice(B.indexOf(c),1);table.push({a:c});
+  }
+  endRound(true);
+}
+function bito(){if(mode==='pAtk'&&table.length&&table.every(t=>t.d))endRound(false)}
+function endRound(took){
+  const pDef=att==='b';
+  const cards=table.flatMap(t=>t.d?[t.a,t.d]:[t.a]);table=[];
+  if(took)(pDef?P:B).push(...cards);else discard.push(...cards);
+  snd(took?'take':'sweep');
+  const a=att==='p'?P:B,d=att==='p'?B:P;draw(a);draw(d);
+  if(!took)att=att==='p'?'b':'p';
+  if(!deck.length&&(!P.length||!B.length)){
+    mode='end';
+    if(!P.length&&B.length)wins++;else if(P.length&&!B.length)losses++;
+    try{localStorage.setItem('score',wins+':'+losses)}catch(e){}
+    msg=!P.length&&!B.length?'Ничья!':!P.length?'Вы выиграли! 🎉':'Вы остались дураком.';
+    later(()=>snd(!P.length&&B.length?'win':P.length&&!B.length?'lose':'sweep'),250);
+    return render();
+  }
+  start(took?(pDef?'Вы взяли карты.':'Бот взял карты.'):'Бито.');
+}
+let theme='classic';
+const sv=c=>`<svg viewBox="0 0 24 24"><use href="#p${c.s}"/></svg>`;
+const rk=c=>N[c.r]||c.r;
+const face=(c,x='',tag='div',extra='')=>`<${tag} class="c f s${c.s} ${x}" ${extra}><i class="ix"><b>${rk(c)}</b>${sv(c)}</i><i class="ix br"><b>${rk(c)}</b>${sv(c)}</i></${tag}>`;
+function setMode(){
+  perev=!perev;
+  try{localStorage.setItem('perev',perev?'1':'0')}catch(e){}
+  init();
+}
+function setMute(){
+  muted=!muted;
+  try{localStorage.setItem('muted',muted?'1':'0')}catch(e){}
+  render();
+}
+const TC=['green','blue','red','purple','gray'];let tcol=4;
+function setTable(){
+  tcol=(tcol+1)%TC.length;
+  document.documentElement.dataset.table=TC[tcol];
+  try{localStorage.setItem('table',TC[tcol])}catch(e){}
+}
+function setCards(){
+  theme=theme==='black'?'classic':'black';
+  document.documentElement.dataset.cards=theme;
+  try{localStorage.setItem('cards',theme)}catch(e){}
+  render();
+}
+let shown=new Set();
+const ck=c=>c.s+'-'+c.r;
+function canPlay(c){
+  if(mode==='pAtk'||mode==='bTake')return table.length<limit&&(!table.length||ranks().has(c.r));
+  if(mode==='pDef')return table.some(t=>!t.d&&beats(t.a,c))||canXfer(c,B.length);
+  return false;
+}
+function render(){
+  P.sort((a,b)=>val(a)-val(b));
+  const pop=c=>shown.has(ck(c))?'':'pop';
+  const tb=table.map(t=>`<div class="pair">${face(t.a,pop(t.a))}${t.d?face(t.d,'d '+pop(t.d)):''}</div>`).join('');
+  shown=new Set(table.flatMap(t=>t.d?[ck(t.a),ck(t.d)]:[ck(t.a)]));
+  const act=['pAtk','pDef','bTake'].includes(mode);
+  const hand=P.map((c,i)=>face(c,ck(c)===hint?'hl':'','button',`onclick="play(${i})"`)).join('');
+  const red=trump.s===1||trump.s===2;
+  const tr=deck.length?face(trump,'tr'):`<div class="c f s${trump.s} tr dim"><svg class="mid" viewBox="0 0 24 24"><use href="#p${trump.s}"/></svg></div>`;
+  const dk=`<div class="deckbox">${tr}${deck.length>1?`<div class="c b dk">${deck.length}</div>`:''}<span class="tl ${red?'rd':''}">Козырь ${S[trump.s]}</span></div>`;
+  let acts='';
+  if(mode==='pDef')acts='<button class="btn red" onclick="take()">Беру</button>';
+  if(mode==='pAtk'&&table.length)acts='<button class="btn" onclick="bito()">Бито</button>';
+  if(mode==='bTake')acts='<button class="btn" onclick="endRound(true)">Готово</button>';
+  const live=mode!=='end';
+  const ov=mode==='end'?`<div class="ov"><div class="box"><div class="big">${msg}</div><button class="btn" onclick="init()">Сыграть ещё</button></div></div>`:'';
+  document.getElementById('app').innerHTML=
+   `<div class="hd"><b>🃏 Дурак<small>${perev?'переводной':'подкидной'} · ${wins}:${losses}</small></b><span><button class="ic" onclick="setTable()" title="Цвет стола">🎨</button><button class="ic" onclick="setCards()" title="Вид карт">🎴</button><button class="ic" onclick="setMode()" title="Режим игры">🔀</button><button class="ic" onclick="setMute()" title="Звук">${muted?'🔇':'🔊'}</button><button class="ic" onclick="lobby()" title="Онлайн">🌐</button><button class="ic" onclick="showHint()" title="Подсказка">💡</button><button class="ic" onclick="init()" title="Новая игра">↻</button></span></div>
+    <div class="pl"><div class="av">🤖<em>${B.length}</em></div><div class="nm">Бот${live?' · '+(att==='b'?'атакует':'отбивается'):''}</div><div class="row bot">${B.map(()=>'<div class="c b"></div>').join('')}</div></div>
+    <div class="table">${dk}<div class="tcards">${tb||'<div class="empty">Стол пуст</div>'}</div></div>
+    <div class="pill">${msg}</div>
+    <div class="acts">${acts}</div>
+    <div class="pl"><div class="av">🙂<em>${P.length}</em></div><div class="nm">Вы${live?' · '+(att==='p'?'атакуете':'отбиваетесь'):''}</div></div>
+    <div class="row hand" style="--ov:${P.length>1?Math.max(-36,Math.min(-26,(Math.min(innerWidth,560)-24-54)/(P.length-1)-54)):-26}px">${hand}</div>${ov}`;
+}
+try{theme=localStorage.getItem('cards')==='black'?'black':'classic'}catch(e){}
+document.documentElement.dataset.cards=theme;
+try{const t=TC.indexOf(localStorage.getItem('table'));if(t>=0)tcol=t}catch(e){}
+document.documentElement.dataset.table=TC[tcol];
+try{perev=localStorage.getItem('perev')==='1';muted=localStorage.getItem('muted')==='1'}catch(e){}
+try{const s=(localStorage.getItem('score')||'0:0').split(':');wins=+s[0]||0;losses=+s[1]||0}catch(e){}
+/* ===== FIREBASE (Realtime Database) ===== */
+const FB_CONFIG={
+  apiKey:"AIzaSyCbL2W1-WK0GKKA9a7JD_2uW8IzVoZWhio",
+  authDomain:"durak-34290.firebaseapp.com",
+  databaseURL:"https://durak-34290-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:"durak-34290",
+  storageBucket:"durak-34290.firebasestorage.app",
+  messagingSenderId:"514619063683",
+  appId:"1:514619063683:web:7aa7af33012d352e60cab6"
+};
+const FB_V='10.12.2';
+const loadJS=src=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=no;document.head.appendChild(s)});
+let fbPromise=null;
+function getDb(){
+  if(fbPromise)return fbPromise;
+  fbPromise=(async()=>{
+    try{
+      if(!window.firebase){
+        await loadJS(`https://www.gstatic.com/firebasejs/${FB_V}/firebase-app-compat.js`);
+        await loadJS(`https://www.gstatic.com/firebasejs/${FB_V}/firebase-database-compat.js`);
+      }
+      if(!firebase.apps.length)firebase.initializeApp(FB_CONFIG);
+      const db=firebase.database();
+      const snap=s=>({exists:s.exists(),data:()=>s.val()});
+      return {doc:p=>{const r=db.ref(p);return{
+        get:async()=>snap(await r.get()),
+        set:v=>r.set(v),
+        update:v=>r.update(v),
+        onSnapshot:(cb,err)=>{const h=s=>cb(snap(s));r.on('value',h,err);return()=>r.off('value',h)}
+      }}};
+    }catch(e){
+      fbPromise=null;
+      try{if(window.claude)return await claude.use('db')}catch(e2){}
+      return null;
+    }
+  })();
+  return fbPromise;
+}
+/* ===== ONLINE (2 players) ===== */
+let G=null,me=0,oref=null,ounsub=null,odb=null,ocode='',onote='';
+const $a=()=>document.getElementById('app');
+const cl=c=>({s:(+c.s)&3,r:Math.min(14,Math.max(6,+c.r||6))});
+const arr=x=>Array.isArray(x)?x:x?Object.values(x):[];
+const oV=c=>c.r+(c.s===G.trump.s?100:0);
+const oB=(g,a,d)=>d.s===a.s?d.r>a.r:d.s===g.trump.s;
+const oSay=m=>{onote=m;oRender()};
+const oSet=g=>oref.set(g).catch(()=>oSay('Не удалось отправить ход. Проверьте интернет.'));
+function oTurn(){
+  if(!G||!G.ready||G.end)return 'wait';
+  if(G.take)return me===G.att?'add':'wait';
+  if(G.table.some(t=>!t.d))return me!==G.att?'def':'wait';
+  return me===G.att?'atk':'wait';
+}
+function oNew(){
+  const d=[];for(let s=0;s<4;s++)for(let r=6;r<=14;r++)d.push({s,r});
+  for(let i=d.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[d[i],d[j]]=[d[j],d[i]]}
+  const t=d[0],h=[[],[]];
+  for(let k=0;k<6;k++){h[0].push(d.pop());h[1].push(d.pop())}
+  const low=x=>Math.min(99,...x.filter(c=>c.s===t.s).map(c=>c.r));
+  return {deck:d,trump:t,h,table:[],att:low(h[0])<=low(h[1])?0:1,take:false,perev:perev,limit:6,end:'',ready:true,ts:Date.now()};
+}
+async function lobby(){
+  gen++;if(ounsub){ounsub();ounsub=null}G=null;
+  $a().innerHTML=`<div class="hd"><b>🌐 Онлайн<small>Дурак на двоих</small></b><button class="ic" onclick="init()" title="Назад">✕</button></div>
+  <div class="box" style="margin-top:24px"><button class="btn" onclick="oCreate()">Создать игру</button><div class="nm">или введите код друга:</div><input id="oc" maxlength="4" autocomplete="off" style="font:700 26px system-ui,sans-serif;text-align:center;text-transform:uppercase;padding:8px;border-radius:10px;border:0;width:150px;margin:0 auto"><button class="btn" onclick="oJoin()">Войти</button><div id="om" class="nm">Подключение…</div></div>`;
+  odb=odb||await getDb();
+  const m=document.getElementById('om');
+  if(m)m.textContent=odb?'':'Нет связи с сервером игры. Проверьте интернет и попробуйте снова.';
+}
+async function oCreate(){
+  if(!odb)return;
+  try{
+    let code,s;
+    do{code=Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.random()*24|0]).join('');s=await odb.doc('rooms/'+code).get()}while(s.exists&&!s.data().end&&Date.now()-(s.data().ts||0)<864e5);
+    me=0;oref=odb.doc('rooms/'+code);
+    const g=oNew();g.ready=false;await oref.set(g);oWatch(code);
+  }catch(e){document.getElementById('om').textContent='Не удалось создать игру. Проверьте интернет.'}
+}
+async function oJoin(){
+  const code=document.getElementById('oc').value.trim().toUpperCase(),m=document.getElementById('om');
+  if(!odb||code.length!==4)return;
+  try{
+    const r=odb.doc('rooms/'+code),s=await r.get();
+    if(!s.exists)return m.textContent='Игра с таким кодом не найдена.';
+    if(s.data().ready)return m.textContent='В этой игре уже двое.';
+    me=1;oref=r;await r.update({ready:true});oWatch(code);
+  }catch(e){m.textContent='Не удалось войти в игру. Проверьте интернет.'}
+}
+function oWatch(code){
+  ocode=code.replace(/[^A-Z]/g,'');try{localStorage.setItem('osess',ocode+me)}catch(e){}if(ounsub)ounsub();
+  ounsub=oref.onSnapshot(s=>{
+    if(!s.exists)return;const g=s.data();onote='';
+    const h=arr(g.h);
+    G={...g,trump:cl(g.trump),deck:arr(g.deck).map(cl),h:[0,1].map(i=>arr(h[i]).map(cl)),table:arr(g.table).map(t=>t.d?{a:cl(t.a),d:cl(t.d)}:{a:cl(t.a)})};
+    oRender();
+  },()=>{$a().textContent='Ошибка связи с игрой.'});
+}
+function oPlay(i){
+  const st=oTurn();if(st==='wait')return;
+  const g=structuredClone(G),h=g.h[me],c=h[i];if(!c)return;
+  if(st==='atk'||st==='add'){
+    const rk2=new Set(g.table.flatMap(t=>t.d?[t.a.r,t.d.r]:[t.a.r]));
+    if(g.table.length&&!rk2.has(c.r))return oSay('Нужна карта того же достоинства, что на столе.');
+    if(g.table.length>=g.limit)return oSay('Больше карт подкинуть нельзя.');
+    h.splice(i,1);g.table.push({a:c});
+  }else{
+    const t=g.table.find(t=>!t.d&&oB(g,t.a,c));
+    if(t){t.d=c;h.splice(i,1)}
+    else if(g.perev&&g.table.every(t=>!t.d&&t.a.r===c.r)&&g.h[1-me].length>=g.table.length+1){
+      h.splice(i,1);g.table.push({a:c});g.att=me;g.limit=Math.min(6,g.h[1-me].length);
+    }else return oSay(g.perev?'Эта карта не бьёт и не подходит для перевода.':'Эта карта не бьёт.');
+  }
+  snd('card');oSet(g);
+}
+function oEnd(g,took){
+  const a=g.att,d=1-a,cards=g.table.flatMap(t=>t.d?[t.a,t.d]:[t.a]);
+  g.table=[];g.take=false;
+  if(took)g.h[d].push(...cards);
+  for(const p of [a,d])while(g.h[p].length<6&&g.deck.length)g.h[p].push(g.deck.pop());
+  if(!took)g.att=d;
+  g.limit=Math.min(6,g.h[1-g.att].length);
+  if(!g.deck.length&&(!g.h[0].length||!g.h[1].length))g.end=!g.h[0].length&&!g.h[1].length?'draw':!g.h[0].length?'0':'1';
+  g.ts=Date.now();
+  snd(took?'take':'sweep');oSet(g);
+}
+function oTake(){if(oTurn()==='def'){const g=structuredClone(G);g.take=true;oSet(g)}}
+function oBito(){if(oTurn()==='atk'&&G.table.length)oEnd(structuredClone(G),false)}
+function oDone(){if(oTurn()==='add')oEnd(structuredClone(G),true)}
+function oAgain(){const g=oNew();oSet(g)}
+function oLeave(){if(ounsub){ounsub();ounsub=null}G=null;try{localStorage.removeItem('osess')}catch(e){}init()}
+function oRender(){
+  if(!G)return;
+  const st=oTurn(),mine=G.h[me],opp=G.h[1-me],red=G.trump.s===1||G.trump.s===2;
+  const tr=G.deck.length?face(G.trump,'tr'):`<div class="c f s${G.trump.s} tr dim"><svg class="mid" viewBox="0 0 24 24"><use href="#p${G.trump.s}"/></svg></div>`;
+  const dk=`<div class="deckbox">${tr}${G.deck.length>1?`<div class="c b dk">${G.deck.length}</div>`:''}<span class="tl ${red?'rd':''}">Козырь ${S[G.trump.s]}</span></div>`;
+  const tb=G.table.map(t=>`<div class="pair">${face(t.a)}${t.d?face(t.d,'d'):''}</div>`).join('');
+  let acts='';
+  if(st==='def')acts='<button class="btn red" onclick="oTake()">Беру</button>';
+  if(st==='atk'&&G.table.length)acts='<button class="btn" onclick="oBito()">Бито</button>';
+  if(st==='add')acts='<button class="btn" onclick="oDone()">Готово</button>';
+  const m=!G.ready?'Код игры: '+ocode+'. Отправьте его другу.':st==='wait'?(G.take?'Соперник берёт карты.':'Ход соперника…'):st==='atk'?(G.table.length?'Подкиньте или нажмите «Бито».':'Ваш ход.'):st==='def'?'Отбейтесь'+(G.perev?', переведите':'')+' или возьмите.':'Соперник берёт. Подкиньте или нажмите «Готово».';
+  const hand=mine.map((c,i)=>({c,i})).sort((x,y)=>oV(x.c)-oV(y.c)).map(({c,i})=>face(c,'','button',`onclick="oPlay(${i})"`)).join('');
+  const ovl=mine.length>1?Math.max(-36,Math.min(-26,(Math.min(innerWidth,560)-24-54)/(mine.length-1)-54)):-26;
+  const end=G.end?`<div class="ov"><div class="box"><div class="big">${G.end==='draw'?'Ничья!':G.end===String(me)?'Вы выиграли! 🎉':'Вы остались дураком.'}</div><button class="btn" onclick="oAgain()">Сыграть ещё</button></div></div>`:'';
+  $a().innerHTML=`<div class="hd"><b>🌐 Дурак онлайн<small>${G.perev?'переводной':'подкидной'} · код ${ocode}</small></b><span><button class="ic" onclick="oLeave()" title="Выйти">✕</button></span></div>
+  <div class="pl"><div class="av">🧑<em>${opp.length}</em></div><div class="nm">Соперник</div><div class="row bot">${opp.map(()=>'<div class="c b"></div>').join('')}</div></div>
+  <div class="table">${dk}<div class="tcards">${tb||'<div class="empty">Стол пуст</div>'}</div></div>
+  <div class="pill">${onote||m}</div><div class="acts">${acts}</div>
+  <div class="pl"><div class="av">🙂<em>${mine.length}</em></div><div class="nm">Вы</div></div>
+  <div class="row hand" style="--ov:${ovl}px">${hand}</div>${end}`;
+}
+
+async function oResume(){
+  let v;try{v=localStorage.getItem('osess')}catch(e){}
+  if(!v||!/^[A-Z]{4}[01]$/.test(v))return;
+  try{
+    odb=odb||await getDb();if(!odb)return;
+    const r=odb.doc('rooms/'+v.slice(0,4)),s=await r.get();
+    if(!s.exists||s.data().end){localStorage.removeItem('osess');return}
+    gen++;me=+v[4];oref=r;oWatch(v.slice(0,4));
+  }catch(e){}
+}
+init();oResume();
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script></body></html>
