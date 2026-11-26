@@ -119,6 +119,39 @@ button.c.deal,.c.deal{animation:deal .42s cubic-bezier(.2,.8,.3,1) backwards}
 .av img{width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block}
 .lbav{display:inline-flex;width:24px;height:24px;border-radius:24%;overflow:hidden;vertical-align:middle;margin-right:7px;align-items:center;justify-content:center;background:#fff2;font-size:15px}
 .lbav img{width:100%;height:100%;object-fit:cover}
+html[data-skin="casino"] .table{background:radial-gradient(ellipse at center,#14894a,#06401f 75%);border-color:#c9a227;box-shadow:inset 0 0 0 3px #7a5c0c,inset 0 0 36px #0008,0 8px 18px #0006}
+html[data-skin="velvet"] .table{background:radial-gradient(ellipse at center,#9c1f45,#3d0716 78%);border-color:#2a1206}
+html[data-skin="wood"] .table{background:radial-gradient(ellipse at center,#0000,#0006 85%),repeating-linear-gradient(100deg,#7a4a22 0 6px,#6b3f1c 6px 13px,#83532a 13px 17px);border-color:#3b2410}
+html[data-skin="marble"] .table{background:repeating-linear-gradient(120deg,#0000 0 38px,#ffffff14 38px 40px,#0000 40px 90px),linear-gradient(135deg,#2f3440,#4a505c 45%,#2a2e37 65%,#4a505c);border-color:#9aa3ad}
+html[data-skin="neon"] .table{background:radial-gradient(ellipse at center,#1a0f33,#07040f 75%);border-color:#ff2fd6;box-shadow:0 0 12px #ff2fd6aa,inset 0 0 18px #2fb4ff66,inset 0 0 0 2px #2fb4ff}
+html[data-skin="space"] .table{background:radial-gradient(1px 1px at 20% 30%,#fff,#0000),radial-gradient(1px 1px at 70% 60%,#fff,#0000),radial-gradient(1.5px 1.5px at 40% 80%,#cde,#0000),radial-gradient(1px 1px at 85% 20%,#fff,#0000),radial-gradient(ellipse at center,#1b2a6b,#070b22 75%);background-size:120px 120px,90px 90px,150px 150px,70px 70px,100% 100%;border-color:#4b5bd6}
+.skinpv[data-skin] .table{box-shadow:inset 0 0 14px #0008}
+.skinpv[data-skin="casino"] .table{background:radial-gradient(ellipse at center,#14894a,#06401f 75%);border-color:#c9a227;box-shadow:inset 0 0 0 3px #7a5c0c,inset 0 0 36px #0008,0 8px 18px #0006}
+.skinpv[data-skin="velvet"] .table{background:radial-gradient(ellipse at center,#9c1f45,#3d0716 78%);border-color:#2a1206}
+.skinpv[data-skin="wood"] .table{background:radial-gradient(ellipse at center,#0000,#0006 85%),repeating-linear-gradient(100deg,#7a4a22 0 6px,#6b3f1c 6px 13px,#83532a 13px 17px);border-color:#3b2410}
+.skinpv[data-skin="marble"] .table{background:repeating-linear-gradient(120deg,#0000 0 38px,#ffffff14 38px 40px,#0000 40px 90px),linear-gradient(135deg,#2f3440,#4a505c 45%,#2a2e37 65%,#4a505c);border-color:#9aa3ad}
+.skinpv[data-skin="neon"] .table{background:radial-gradient(ellipse at center,#1a0f33,#07040f 75%);border-color:#ff2fd6;box-shadow:0 0 12px #ff2fd6aa,inset 0 0 18px #2fb4ff66,inset 0 0 0 2px #2fb4ff}
+.skinpv[data-skin="space"] .table{background:radial-gradient(1px 1px at 20% 30%,#fff,#0000),radial-gradient(1px 1px at 70% 60%,#fff,#0000),radial-gradient(1.5px 1.5px at 40% 80%,#cde,#0000),radial-gradient(1px 1px at 85% 20%,#fff,#0000),radial-gradient(ellipse at center,#1b2a6b,#070b22 75%);background-size:120px 120px,90px 90px,150px 150px,70px 70px,100% 100%;border-color:#4b5bd6}
+.av.fr-silver{border:3px solid #e6ebf0;box-shadow:0 0 0 2px #7c8590}
+.av.fr-gold{border:3px solid #f5c842;box-shadow:0 0 0 2px #a87a00,0 0 10px #f5c84288}
+.av.fr-neon{border:3px solid #2fb4ff;box-shadow:0 0 6px #2fb4ff,0 0 16px #2fb4ffaa}
+.av.fr-ice{border:3px solid #c9f3ff;box-shadow:0 0 0 2px #5fb8e0,0 0 12px #bdf3ffaa}
+.av.fr-emerald{border:3px solid #35d07f;box-shadow:0 0 0 2px #0f6b3c,0 0 10px #35d07f88}
+.av.fr-fire{border:3px solid #ffb02e;box-shadow:0 0 0 2px #ff3b1f,0 0 14px #ff6a00cc;animation:frfire 1.2s ease-in-out infinite alternate}
+.av.fr-royal{border:3px solid #f5c842;box-shadow:0 0 0 3px #6a2bbf,0 0 0 5px #f5c842,0 0 12px #6a2bbf}
+.av.fr-rainbow{border:3px solid transparent;background:linear-gradient(#2a2a2a,#2a2a2a) padding-box,conic-gradient(#ff004c,#ffb800,#3dff00,#00e5ff,#7a00ff,#ff004c) border-box}
+@keyframes frfire{to{box-shadow:0 0 0 2px #ff3b1f,0 0 22px #ffb02e}}
+.box.shop{position:relative;width:min(560px,calc(100vw - 24px));max-height:calc(100vh - 40px);box-sizing:border-box;padding:20px 14px;gap:12px}
+.shopgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:10px;overflow:auto;max-height:calc(100vh - 240px);padding:6px}
+.sitem{background:#0004;border:2px solid #fff1;border-radius:14px;padding:10px 8px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.sitem.on{border-color:#f5b301}
+.snm{font-weight:700;font-size:14px}.spr{font-size:12px;opacity:.8}
+.sbtn{border:0;border-radius:10px;padding:8px 10px;font:700 12px system-ui,sans-serif;background:#f5b301;color:#2b2200;cursor:pointer;width:100%}
+.sbtn:disabled{background:#fff2;color:#fffa;cursor:default}
+.sbtn.on{background:#35d07f;color:#04210f}
+.segb.wide{width:auto;padding:0 18px;font-size:15px}
+.skinpv{width:100%}
+.skinpv .table{min-height:0;height:62px;padding:0;border-width:3px;border-radius:10px;position:relative;display:block}
 .hd b small{display:block;font-size:11px;font-weight:400;opacity:.7;letter-spacing:0}
 </style></head>
 <body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -360,12 +393,12 @@ function render(){
   const live=mode!=='end';
   const ov=mode==='end'?`<div class="ov"><div class="box"><div class="big">${msg}</div><button class="btn" onclick="init()">Сыграть ещё</button></div></div>`:'';
   document.getElementById('app').innerHTML=
-   `<div class="hd"><b>🃏 Durak<small>${perev?'переводной':'подкидной'} · ${wins}:${losses}</small></b><span class="hr">${coinBadge()}<button class="mbtn lbb" onclick="openLeaders()" title="Лидеры" aria-label="Таблица лидеров">🏆</button><button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>
+   `<div class="hd"><b>🃏 Durak<small>${perev?'переводной':'подкидной'} · ${wins}:${losses}</small></b><span class="hr">${coinBadge()}<button class="mbtn lbb" onclick="openShop()" title="Магазин" aria-label="Магазин">🛒</button><button class="mbtn lbb" onclick="openLeaders()" title="Лидеры" aria-label="Таблица лидеров">🏆</button><button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>
     <div class="pl"><div class="av"><img src="${BOTAV}" alt="Бот"><em>${B.length}</em></div><div class="nm">Бот${live?' · '+(att==='b'?'атакует':'отбивается'):''}</div><div class="row bot">${botRow}</div></div>
     <div class="table">${dk}<div class="tcards">${tb||''}</div></div>
     <div class="pill">${msg}</div>
     <div class="acts">${acts}</div>
-    <div class="pl"><div class="av">${avImg(ACC&&ACC.uid,'🙂')}<em>${P.length}</em></div><div class="nm">${esc(pName())}${ACC&&ACC.dev?' '+DEVB:''}${live?' · '+(att==='p'?'атакуете':'отбиваетесь'):''}</div></div>
+    <div class="pl"><div class="av${frCls(ACC&&ACC.uid)}">${avImg(ACC&&ACC.uid,'🙂')}<em>${P.length}</em></div><div class="nm">${esc(pName())}${ACC&&ACC.dev?' '+DEVB:''}${live?' · '+(att==='p'?'атакуете':'отбиваетесь'):''}</div></div>
     <div class="row hand" style="--ov:${P.length>1?Math.max(-36,Math.min(-26,(Math.min(innerWidth,560)-24-54)/(P.length-1)-54)):-26}px">${hand}</div>${ov}`;
 }
 try{theme=localStorage.getItem('cards')==='black'?'black':'classic'}catch(e){}
@@ -423,7 +456,7 @@ function onAuth(user){
   if(accUnsub){accUnsub();accUnsub=null}
   if(!user){ACC=null;authReadyRes();accRefresh();return}
   const ref=firebase.database().ref('users/'+user.uid);
-  const h=s=>{const v=s.val()||{};ACC={uid:user.uid,nick:v.nick||'…',coins:+v.coins||0,dev:!!ADMINS[user.uid],st:(ACC&&ACC.uid===user.uid&&ACC.st)||{g:0,w:0}};
+  const h=s=>{const v=s.val()||{};ACC={uid:user.uid,nick:v.nick||'…',coins:+v.coins||0,dev:!!ADMINS[user.uid],inv:v.inv||{},st:(ACC&&ACC.uid===user.uid&&ACC.st)||{g:0,w:0}};
     if(v.nick){try{localStorage.setItem('oname',v.nick)}catch(e){}}
     authReadyRes();accRefresh()};
   ref.on('value',h,()=>{authReadyRes()});
@@ -432,6 +465,8 @@ function onAuth(user){
   accUnsub=()=>{ref.off('value',h);sref.off('value',sh)};
 }
 function accRefresh(){
+  try{applySkin()}catch(e){}
+  if(document.getElementById('shopov'))openShop();
   if(G)oRender();else if(mode)render();
   if(document.getElementById('menu'))openMenu();
   const pv=document.getElementById('accov');if(pv&&pv.dataset.view==='profile')openAccount('profile');
@@ -572,7 +607,7 @@ function openAccount(view){
     <input id="a2" ${IN} type="password" placeholder="Новый пароль" autocomplete="new-password">
     <input id="a3" ${IN} type="password" placeholder="Повторите пароль" autocomplete="new-password">
     ${err}<button class="btn" id="ago">Сменить пароль</button>${link('Назад ко входу','login')}`;
-  else if(view==='profile'&&ACC)h=`<div class="av" style="margin:0 auto;width:88px;height:88px;font-size:46px;cursor:pointer" onclick="document.getElementById('avf').click()" title="Сменить фото">${avImg(ACC.uid,'🙂')}<em style="right:-8px;bottom:-6px;font-size:15px;padding:3px 6px">📷</em></div>
+  else if(view==='profile'&&ACC)h=`<div class="av${frCls(ACC.uid)}" style="margin:0 auto;width:88px;height:88px;font-size:46px;cursor:pointer" onclick="document.getElementById('avf').click()" title="Сменить фото">${avImg(ACC.uid,'🙂')}<em style="right:-8px;bottom:-6px;font-size:15px;padding:3px 6px">📷</em></div>
     <input type="file" id="avf" accept="image/*" style="display:none">
     <div style="display:flex;gap:14px;justify-content:center">${link('Сменить фото','#avf')}${AVC[ACC.uid]?`<button onclick="avRemove()" style="background:none;border:0;color:#ffb3b3;font:600 14px system-ui,sans-serif;cursor:pointer;text-decoration:underline">Удалить фото</button>`:''}</div>
     <div id="averr" class="nm" style="color:#ffb3b3;min-height:0"></div>
@@ -620,6 +655,60 @@ function showCode(code,bonus){
   d.querySelector('#asaved').onchange=e=>{done.disabled=!e.target.checked;done.style.opacity=e.target.checked?1:.5};
   d.querySelector('#acopy').onclick=async e=>{try{await navigator.clipboard.writeText(code);e.target.textContent='Скопировано ✔'}catch(x){e.target.textContent='Выделите код и скопируйте'}};
   done.onclick=()=>closeAccount();
+}
+/* ===== SHOP: frames + table skins ===== */
+const FRAMES=[
+  {id:'silver',n:'Серебро',p:'0,99 €'},{id:'gold',n:'Золото',p:'1,99 €'},{id:'neon',n:'Неон',p:'1,49 €'},{id:'ice',n:'Лёд',p:'1,49 €'},
+  {id:'emerald',n:'Изумруд',p:'1,49 €'},{id:'fire',n:'Огонь',p:'2,49 €'},{id:'royal',n:'Королевская',p:'2,99 €'},{id:'rainbow',n:'Радуга',p:'2,99 €'}];
+const SKINS=[
+  {id:'casino',n:'Казино',p:'2,49 €'},{id:'velvet',n:'Бархат',p:'1,99 €'},{id:'wood',n:'Дерево',p:'1,99 €'},
+  {id:'marble',n:'Мрамор',p:'2,49 €'},{id:'neon',n:'Неон',p:'2,99 €'},{id:'space',n:'Космос',p:'2,99 €'}];
+const LKC={},LKW={};
+let myFrame='',mySkin='',shopTab='f';
+try{myFrame=localStorage.getItem('frame')||'';mySkin=localStorage.getItem('skin')||''}catch(e){}
+const owns=key=>!!(ACC&&(ACC.dev||(ACC.inv&&ACC.inv[key])));
+function applySkin(){document.documentElement.dataset.skin=mySkin&&owns('s_'+mySkin)?mySkin:''}
+function lkLoad(uid){
+  if(!uid||LKW[uid]||!window.firebase||!firebase.apps.length)return;LKW[uid]=1;
+  firebase.database().ref('looks/'+uid).on('value',s=>{const v=s.val()||{},f=FRAMES.some(x=>x.id===v.f)?v.f:'';if(LKC[uid]===f)return;LKC[uid]=f;if(G)oRender()},()=>{});
+}
+function frameOf(uid){
+  if(ACC&&uid===ACC.uid)return myFrame&&owns('f_'+myFrame)?myFrame:'';
+  if(!uid)return '';lkLoad(uid);return LKC[uid]||'';
+}
+const frCls=uid=>{const f=frameOf(uid);return f?' fr-'+f:''};
+async function setFrame(id){
+  if(id&&!owns('f_'+id))return;
+  myFrame=id;try{localStorage.setItem('frame',id)}catch(e){}
+  if(ACC&&window.firebase){try{await firebase.database().ref('looks/'+ACC.uid).set({f:id})}catch(e){}}
+  if(G)oRender();else if(mode)render();openShop();
+}
+function setSkin(id){
+  if(id&&!owns('s_'+id))return;
+  mySkin=id;try{localStorage.setItem('skin',id)}catch(e){}
+  applySkin();openShop();
+}
+function shopItem(kind,it){
+  const key=kind+'_'+it.id,mine=owns(key),on=kind==='f'?(myFrame===it.id&&mine):(mySkin===it.id&&mine);
+  const prev=kind==='f'
+    ?`<div class="av fr-${it.id}" style="width:56px;height:56px;font-size:30px;margin:4px auto">${ACC?avImg(ACC.uid,'🙂'):'🙂'}</div>`
+    :`<div class="skinpv" data-skin="${it.id}"><div class="table"><div class="c f s1" style="transform:scale(.42);transform-origin:0 0;position:absolute;left:10px;top:8px"><i class="ix"><b>Т</b></i></div><div class="c f s0" style="transform:scale(.42);transform-origin:0 0;position:absolute;left:34px;top:14px"><i class="ix"><b>К</b></i></div></div></div>`;
+  const btn=mine
+    ?(on?`<button class="sbtn on" onclick="${kind==='f'?"setFrame('')":"setSkin('')"}">✓ Надето</button>`:`<button class="sbtn" onclick="${kind==='f'?`setFrame('${it.id}')`:`setSkin('${it.id}')`}">Надеть</button>`)
+    :`<button class="sbtn" disabled>Скоро в продаже</button>`;
+  return `<div class="sitem${on?' on':''}">${prev}<div class="snm">${it.n}</div><div class="spr">${mine&&ACC&&ACC.dev?'🛠 доступно':it.p}</div>${btn}</div>`;
+}
+function openShop(){
+  closeMenu();
+  let d=document.getElementById('shopov');const keep=d?d.querySelector('.shopgrid')?.scrollTop:0;
+  if(!d){d=document.createElement('div');d.className='ov';d.id='shopov';d.onclick=e=>{if(e.target===d)d.remove()};document.body.appendChild(d)}
+  const list=shopTab==='f'?FRAMES:SKINS;
+  d.innerHTML=`<div class="box shop"><button class="ic" style="position:absolute;right:10px;top:10px;margin:0" onclick="document.getElementById('shopov').remove()" aria-label="Закрыть">✕</button>
+    <div class="big">🛒 Магазин</div>
+    <div class="seg"><button class="segb wide${shopTab==='f'?' on':''}" onclick="shopTab='f';openShop()">Рамки</button><button class="segb wide${shopTab==='s'?' on':''}" onclick="shopTab='s';openShop()">Столы</button></div>
+    <div class="shopgrid">${list.map(it=>shopItem(shopTab,it)).join('')}</div>
+    <div class="nm" style="font-size:12px">${ACC&&ACC.dev?'Аккаунт разработчика: все товары доступны для проверки.':'Покупка за реальные деньги появится скоро. Козыри за косметику не тратятся.'}${!ACC?' Для покупок нужен аккаунт.':''}</div></div>`;
+  const g=d.querySelector('.shopgrid');if(g&&keep)g.scrollTop=keep;
 }
 /* ===== MENU ===== */
 const TCN={green:'зелёный',blue:'синий',red:'красный',purple:'фиолетовый',gray:'графит'};
@@ -916,7 +1005,7 @@ function oRender(){
     const cnt=g.ready?g.h[i].length:0,show=Math.min(cnt,8),prev=Math.min(oOppSeen[i]??0,show);oOppSeen[i]=show;
     const backs=Array.from({length:show},(_,k)=>`<div class="c b mini${k>=prev?' dealb':''}"${k>=prev?` style="animation-delay:${(k-prev)*70}ms"`:''}></div>`).join('');
     const cls=g.ready&&!g.end&&!g.out[i]?(i===g.def?' def':i===g.att?' att':''):'';
-    return `<div class="opp${cls}"><div class="av">${avImg(g.u[i],EM[i])}<em>${g.ready?cnt:'–'}</em></div><div class="nm">${g.j[i]?esc(pn(g,i)):'…'}${ADMINS[g.u[i]]?' '+DEVB:''}<br><small>${status(i)}</small></div><div class="minis">${backs}</div></div>`;
+    return `<div class="opp${cls}"><div class="av${frCls(g.u[i])}">${avImg(g.u[i],EM[i])}<em>${g.ready?cnt:'–'}</em></div><div class="nm">${g.j[i]?esc(pn(g,i)):'…'}${ADMINS[g.u[i]]?' '+DEVB:''}<br><small>${status(i)}</small></div><div class="minis">${backs}</div></div>`;
   }).join('');
   let body;
   if(!g.ready){
@@ -949,10 +1038,10 @@ function oRender(){
     body=`<div class="opps">${opps}</div>
   <div class="table">${dk}<div class="tcards">${tb||''}</div></div>
   <div class="pill">${onote||m}</div><div class="acts">${acts}</div>
-  <div class="pl"><div class="av${myCls}">${avImg(g.u[me],EM[me])}<em>${mine.length}</em></div><div class="nm">${esc(pn(g,me))} (вы)${ADMINS[g.u[me]]?' '+DEVB:''}${status(me)?' · '+status(me):''}</div></div>
+  <div class="pl"><div class="av${myCls}${frCls(g.u[me])}">${avImg(g.u[me],EM[me])}<em>${mine.length}</em></div><div class="nm">${esc(pn(g,me))} (вы)${ADMINS[g.u[me]]?' '+DEVB:''}${status(me)?' · '+status(me):''}</div></div>
   <div class="row hand" style="--ov:${ovl}px">${hand}</div>${end}`;
   }
-  $a().innerHTML=`<div class="hd"><b>🌐 Durak Online<small>${g.perev?'переводной':'подкидной'} · ${g.np} игрока · код ${ocode}${g.u.every(x=>x)&&new Set(g.u).size===g.np?' · 🏆 рейтинговая':''}</small></b><span class="hr">${coinBadge()}<button class="mbtn lbb" onclick="openLeaders()" title="Лидеры" aria-label="Таблица лидеров">🏆</button><button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>${body}`;
+  $a().innerHTML=`<div class="hd"><b>🌐 Durak Online<small>${g.perev?'переводной':'подкидной'} · ${g.np} игрока · код ${ocode}${g.u.every(x=>x)&&new Set(g.u).size===g.np?' · 🏆 рейтинговая':''}</small></b><span class="hr">${coinBadge()}<button class="mbtn lbb" onclick="openShop()" title="Магазин" aria-label="Магазин">🛒</button><button class="mbtn lbb" onclick="openLeaders()" title="Лидеры" aria-label="Таблица лидеров">🏆</button><button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>${body}`;
 }
 async function oResume(){
   let v;try{v=localStorage.getItem('osess')}catch(e){}
@@ -965,6 +1054,6 @@ async function oResume(){
   }catch(e){}
 }
 init();oResume();
-getAuth();authReady.then(()=>{try{if(!ACC&&!localStorage.getItem('oname'))openAccount('welcome')}catch(e){}});setTimeout(()=>authReadyRes(),8000);
+applySkin();getAuth();authReady.then(()=>{try{if(!ACC&&!localStorage.getItem('oname'))openAccount('welcome')}catch(e){}});setTimeout(()=>authReadyRes(),8000);
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script></body></html>
