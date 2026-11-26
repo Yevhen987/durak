@@ -346,6 +346,14 @@ const arr=x=>Array.isArray(x)?x:x?Object.values(x):[];
 const oV=c=>c.r+(c.s===G.trump.s?100:0);
 const oB=(g,a,d)=>d.s===a.s?d.r>a.r:d.s===g.trump.s;
 const oSay=m=>{onote=m;oRender()};
+const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function myName(){
+  const el=document.getElementById('on');let n=el?el.value.trim():'';
+  if(!n){try{n=localStorage.getItem('oname')||''}catch(e){}}
+  n=(n||'Игрок').slice(0,12);
+  try{localStorage.setItem('oname',n)}catch(e){}
+  return n;
+}
 const oSet=g=>oref.set(g).catch(()=>oSay('Не удалось отправить ход. Проверьте интернет.'));
 function oTurn(){
   if(!G||!G.ready||G.end)return 'wait';
@@ -364,7 +372,8 @@ function oNew(){
 async function lobby(){
   gen++;if(ounsub){ounsub();ounsub=null}G=null;
   $a().innerHTML=`<div class="hd"><b>🌐 Онлайн<small>Дурак на двоих</small></b><button class="ic" onclick="init()" title="Назад">✕</button></div>
-  <div class="box" style="margin-top:24px"><button class="btn" onclick="oCreate()">Создать игру</button><div class="nm">или введите код друга:</div><input id="oc" maxlength="4" autocomplete="off" style="font:700 26px system-ui,sans-serif;text-align:center;text-transform:uppercase;padding:8px;border-radius:10px;border:0;width:150px;margin:0 auto"><button class="btn" onclick="oJoin()">Войти</button><div id="om" class="nm">Подключение…</div></div>`;
+  <div class="box" style="margin-top:24px"><div class="nm">Ваше имя:</div><input id="on" maxlength="12" autocomplete="off" placeholder="Игрок" style="font:700 20px system-ui,sans-serif;text-align:center;padding:8px;border-radius:10px;border:0;width:200px;margin:0 auto"><button class="btn" onclick="oCreate()">Создать игру</button><div class="nm">или введите код друга:</div><input id="oc" maxlength="4" autocomplete="off" style="font:700 26px system-ui,sans-serif;text-align:center;text-transform:uppercase;padding:8px;border-radius:10px;border:0;width:150px;margin:0 auto"><button class="btn" onclick="oJoin()">Войти</button><div id="om" class="nm">Подключение…</div></div>`;
+  try{const n=localStorage.getItem('oname');if(n)document.getElementById('on').value=n}catch(e){}
   odb=odb||await getDb();
   const m=document.getElementById('om');
   if(m)m.textContent=odb?'':'Нет связи с сервером игры. Проверьте интернет и попробуйте снова.';
@@ -375,7 +384,7 @@ async function oCreate(){
     let code,s;
     do{code=Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.random()*24|0]).join('');s=await odb.doc('rooms/'+code).get()}while(s.exists&&!s.data().end&&Date.now()-(s.data().ts||0)<864e5);
     me=0;oref=odb.doc('rooms/'+code);
-    const g=oNew();g.ready=false;await oref.set(g);oWatch(code);
+    const g=oNew();g.ready=false;g.n=[myName(),''];g.sc=[0,0];await oref.set(g);oWatch(code);
   }catch(e){document.getElementById('om').textContent='Не удалось создать игру. Проверьте интернет.'}
 }
 async function oJoin(){
@@ -385,7 +394,7 @@ async function oJoin(){
     const r=odb.doc('rooms/'+code),s=await r.get();
     if(!s.exists)return m.textContent='Игра с таким кодом не найдена.';
     if(s.data().ready)return m.textContent='В этой игре уже двое.';
-    me=1;oref=r;await r.update({ready:true});oWatch(code);
+    me=1;oref=r;await r.update({ready:true,'n/1':myName()});oWatch(code);
   }catch(e){m.textContent='Не удалось войти в игру. Проверьте интернет.'}
 }
 function oWatch(code){
@@ -393,7 +402,7 @@ function oWatch(code){
   ounsub=oref.onSnapshot(s=>{
     if(!s.exists)return;const g=s.data();onote='';
     const h=arr(g.h);
-    G={...g,trump:cl(g.trump),deck:arr(g.deck).map(cl),h:[0,1].map(i=>arr(h[i]).map(cl)),table:arr(g.table).map(t=>t.d?{a:cl(t.a),d:cl(t.d)}:{a:cl(t.a)})};
+    G={...g,trump:cl(g.trump),deck:arr(g.deck).map(cl),h:[0,1].map(i=>arr(h[i]).map(cl)),table:arr(g.table).map(t=>t.d?{a:cl(t.a),d:cl(t.d)}:{a:cl(t.a)}),n:[0,1].map(i=>String((g.n||{})[i]||'')),sc:[0,1].map(i=>+((g.sc||{})[i])||0)};
     oRender();
   },()=>{$a().textContent='Ошибка связи с игрой.'});
 }
@@ -422,13 +431,14 @@ function oEnd(g,took){
   if(!took)g.att=d;
   g.limit=Math.min(6,g.h[1-g.att].length);
   if(!g.deck.length&&(!g.h[0].length||!g.h[1].length))g.end=!g.h[0].length&&!g.h[1].length?'draw':!g.h[0].length?'0':'1';
+  if(g.end==='0'||g.end==='1')g.sc[+g.end]++;
   g.ts=Date.now();
   snd(took?'take':'sweep');oSet(g);
 }
 function oTake(){if(oTurn()==='def'){const g=structuredClone(G);g.take=true;oSet(g)}}
 function oBito(){if(oTurn()==='atk'&&G.table.length)oEnd(structuredClone(G),false)}
 function oDone(){if(oTurn()==='add')oEnd(structuredClone(G),true)}
-function oAgain(){const g=oNew();oSet(g)}
+function oAgain(){const g=oNew();g.n=G.n;g.sc=G.sc;oSet(g)}
 function oLeave(){if(ounsub){ounsub();ounsub=null}G=null;try{localStorage.removeItem('osess')}catch(e){}init()}
 function oRender(){
   if(!G)return;
@@ -440,15 +450,17 @@ function oRender(){
   if(st==='def')acts='<button class="btn red" onclick="oTake()">Беру</button>';
   if(st==='atk'&&G.table.length)acts='<button class="btn" onclick="oBito()">Бито</button>';
   if(st==='add')acts='<button class="btn" onclick="oDone()">Готово</button>';
-  const m=!G.ready?'Код игры: '+ocode+'. Отправьте его другу.':st==='wait'?(G.take?'Соперник берёт карты.':'Ход соперника…'):st==='atk'?(G.table.length?'Подкиньте или нажмите «Бито».':'Ваш ход.'):st==='def'?'Отбейтесь'+(G.perev?', переведите':'')+' или возьмите.':'Соперник берёт. Подкиньте или нажмите «Готово».';
+  const nMe=esc(G.n[me]||'Вы'),nOp=esc(G.n[1-me]||'Соперник');
+  const score=`${nMe} <b>${G.sc[me]} : ${G.sc[1-me]}</b> ${nOp}`;
+  const m=!G.ready?'Код игры: '+ocode+'. Отправьте его другу.':st==='wait'?(G.take?nOp+' берёт карты.':'Ходит '+nOp+'…'):st==='atk'?(G.table.length?'Подкиньте или нажмите «Бито».':'Ваш ход.'):st==='def'?'Отбейтесь'+(G.perev?', переведите':'')+' или возьмите.':nOp+' берёт. Подкиньте или нажмите «Готово».';
   const hand=mine.map((c,i)=>({c,i})).sort((x,y)=>oV(x.c)-oV(y.c)).map(({c,i})=>face(c,'','button',`onclick="oPlay(${i})"`)).join('');
   const ovl=mine.length>1?Math.max(-36,Math.min(-26,(Math.min(innerWidth,560)-24-54)/(mine.length-1)-54)):-26;
-  const end=G.end?`<div class="ov"><div class="box"><div class="big">${G.end==='draw'?'Ничья!':G.end===String(me)?'Вы выиграли! 🎉':'Вы остались дураком.'}</div><button class="btn" onclick="oAgain()">Сыграть ещё</button></div></div>`:'';
-  $a().innerHTML=`<div class="hd"><b>🌐 Дурак онлайн<small>${G.perev?'переводной':'подкидной'} · код ${ocode}</small></b><span><button class="ic" onclick="oLeave()" title="Выйти">✕</button></span></div>
-  <div class="pl"><div class="av">🧑<em>${opp.length}</em></div><div class="nm">Соперник</div><div class="row bot">${opp.map(()=>'<div class="c b"></div>').join('')}</div></div>
+  const end=G.end?`<div class="ov"><div class="box"><div class="big">${G.end==='draw'?'Ничья!':G.end===String(me)?'Вы выиграли! 🎉':'Вы остались дураком.'}</div><div class="nm" style="font-size:16px">${score}</div><button class="btn" onclick="oAgain()">Сыграть ещё</button></div></div>`:'';
+  $a().innerHTML=`<div class="hd"><b>🌐 Дурак онлайн<small>${G.perev?'переводной':'подкидной'} · код ${ocode} · ${score}</small></b><span><button class="ic" onclick="oLeave()" title="Выйти">✕</button></span></div>
+  <div class="pl"><div class="av">🧑<em>${opp.length}</em></div><div class="nm">${nOp}</div><div class="row bot">${opp.map(()=>'<div class="c b"></div>').join('')}</div></div>
   <div class="table">${dk}<div class="tcards">${tb||'<div class="empty">Стол пуст</div>'}</div></div>
   <div class="pill">${onote||m}</div><div class="acts">${acts}</div>
-  <div class="pl"><div class="av">🙂<em>${mine.length}</em></div><div class="nm">Вы</div></div>
+  <div class="pl"><div class="av">🙂<em>${mine.length}</em></div><div class="nm">${nMe} (вы)</div></div>
   <div class="row hand" style="--ov:${ovl}px">${hand}</div>${end}`;
 }
 
