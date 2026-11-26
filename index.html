@@ -637,7 +637,7 @@ async function oResume(){
   try{
     odb=odb||await getDb();if(!odb)return;
     const r=odb.doc('rooms/'+v.slice(0,4)),s=await r.get();
-    if(!s.exists||s.data().end){localStorage.removeItem('osess');return}
+    if(!s.exists||s.data().end||!s.data().np){localStorage.removeItem('osess');return}
     gen++;me=+v[4];oref=r;oWatch(v.slice(0,4));
   }catch(e){}
 }
