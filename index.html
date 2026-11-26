@@ -459,7 +459,7 @@ async function openLeaders(){
       mine=`<tr class="sep"><td colspan="5">…</td></tr>`+row({uid:ACC.uid,n:ACC.nick,w:ACC.st.w,g:ACC.st.g},rank-1).replace(`<td>${medal(rank-1)}</td>`,`<td>${rank}</td>`);
     }
     box.outerHTML=rows.length?`<table class="lbt"><tr><th>#</th><th>Игрок</th><th>Победы</th><th>Игры</th><th>%</th></tr>${rows.map(row).join('')}${mine}</table>
-      <div class="nm" style="font-size:12px">Считаются онлайн-игры зарегистрированных игроков.${ACC?'':' Зарегистрируйтесь, чтобы попасть в таблицу.'}</div>`
+      <div class="nm" style="font-size:12px">Считаются только онлайн-игры, где все игроки за столом зарегистрированы. Игры с ботом и с гостями не учитываются.${ACC?'':' Зарегистрируйтесь, чтобы попасть в таблицу.'}</div>`
       :`<div class="nm" style="font-size:15px">Пока никого нет. Сыграйте онлайн-партию с аккаунтом — и станьте первым! 🏆</div>`;
   }catch(e){box.textContent='Не удалось загрузить таблицу. Проверьте интернет.'}
 }
@@ -839,7 +839,7 @@ function oWatch(code){
     const g=norm(s.data()),prev=G;onote='';
     if(prev&&prev.table.length&&!g.table.length)sweepFX(prev.take?(prev.def===me?'down':'up'):'bito');
     if(prev&&g.deck.length>prev.deck.length){oHandSeen.clear();oOppSeen={}}
-    if(prev&&prev.ready&&!prev.end&&g.end&&ACC&&g.u[me]===ACC.uid)recordResult(g.end!=='draw'&&g.end!==String(me));
+    if(prev&&prev.ready&&!prev.end&&g.end&&ACC&&g.u[me]===ACC.uid&&g.u.every(x=>x)&&new Set(g.u).size===g.np)recordResult(g.end!=='draw'&&g.end!==String(me));
     G=g;oRender();
   },()=>{$a().textContent='Ошибка связи с игрой.'});
 }
@@ -909,7 +909,7 @@ function oRender(){
   <div class="pl"><div class="av${myCls}">${EM[me]}<em>${mine.length}</em></div><div class="nm">${esc(pn(g,me))} (вы)${ADMINS[g.u[me]]?' '+DEVB:''}${status(me)?' · '+status(me):''}</div></div>
   <div class="row hand" style="--ov:${ovl}px">${hand}</div>${end}`;
   }
-  $a().innerHTML=`<div class="hd"><b>🌐 Дурак онлайн<small>${g.perev?'переводной':'подкидной'} · ${g.np} игрока · код ${ocode}</small></b><span class="hr">${coinBadge()}<button class="mbtn lbb" onclick="openLeaders()" title="Лидеры" aria-label="Таблица лидеров">🏆</button><button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>${body}`;
+  $a().innerHTML=`<div class="hd"><b>🌐 Дурак онлайн<small>${g.perev?'переводной':'подкидной'} · ${g.np} игрока · код ${ocode}${g.u.every(x=>x)&&new Set(g.u).size===g.np?' · 🏆 рейтинговая':''}</small></b><span class="hr">${coinBadge()}<button class="mbtn lbb" onclick="openLeaders()" title="Лидеры" aria-label="Таблица лидеров">🏆</button><button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>${body}`;
 }
 async function oResume(){
   let v;try{v=localStorage.getItem('osess')}catch(e){}
