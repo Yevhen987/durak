@@ -116,6 +116,9 @@ button.c.deal,.c.deal{animation:deal .42s cubic-bezier(.2,.8,.3,1) backwards}
 .lbt td.lbn{max-width:150px;overflow:hidden;text-overflow:ellipsis}
 .lbt tr.me td{background:#f5b30133}
 .lbt tr.sep td{text-align:center;opacity:.5;border:0}
+.av img{width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block}
+.lbav{display:inline-flex;width:24px;height:24px;border-radius:24%;overflow:hidden;vertical-align:middle;margin-right:7px;align-items:center;justify-content:center;background:#fff2;font-size:15px}
+.lbav img{width:100%;height:100%;object-fit:cover}
 .hd b small{display:block;font-size:11px;font-weight:400;opacity:.7;letter-spacing:0}
 </style></head>
 <body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -361,7 +364,7 @@ function render(){
     <div class="table">${dk}<div class="tcards">${tb||'<div class="empty">Стол пуст</div>'}</div></div>
     <div class="pill">${msg}</div>
     <div class="acts">${acts}</div>
-    <div class="pl"><div class="av">🙂<em>${P.length}</em></div><div class="nm">${esc(pName())}${ACC&&ACC.dev?' '+DEVB:''}${live?' · '+(att==='p'?'атакуете':'отбиваетесь'):''}</div></div>
+    <div class="pl"><div class="av">${avImg(ACC&&ACC.uid,'🙂')}<em>${P.length}</em></div><div class="nm">${esc(pName())}${ACC&&ACC.dev?' '+DEVB:''}${live?' · '+(att==='p'?'атакуете':'отбиваетесь'):''}</div></div>
     <div class="row hand" style="--ov:${P.length>1?Math.max(-36,Math.min(-26,(Math.min(innerWidth,560)-24-54)/(P.length-1)-54)):-26}px">${hand}</div>${ov}`;
 }
 try{theme=localStorage.getItem('cards')==='black'?'black':'classic'}catch(e){}
@@ -451,8 +454,9 @@ async function openLeaders(){
     const snap=await firebase.database().ref('stats').orderByChild('w').limitToLast(20).get();
     const rows=[];snap.forEach(c=>{const v=c.val()||{};rows.push({uid:c.key,n:v.n||'?',w:+v.w||0,g:+v.g||0})});
     rows.sort((a,b)=>b.w-a.w||a.g-b.g);
+    await Promise.all(rows.map(r=>avGet(r.uid)));
     const medal=i=>['🥇','🥈','🥉'][i]||(i+1);
-    const row=(r,i)=>`<tr class="${ACC&&r.uid===ACC.uid?'me':''}"><td>${medal(i)}</td><td class="lbn">${esc(r.n)}${ADMINS[r.uid]?' '+DEVB:''}</td><td><b>${r.w}</b></td><td>${r.g}</td><td>${r.g?Math.round(r.w/r.g*100):0}%</td></tr>`;
+    const row=(r,i)=>`<tr class="${ACC&&r.uid===ACC.uid?'me':''}"><td>${medal(i)}</td><td class="lbn"><span class="lbav">${AVC[r.uid]?`<img src="${AVC[r.uid]}" alt="">`:'🙂'}</span>${esc(r.n)}${ADMINS[r.uid]?' '+DEVB:''}</td><td><b>${r.w}</b></td><td>${r.g}</td><td>${r.g?Math.round(r.w/r.g*100):0}%</td></tr>`;
     let mine='';
     if(ACC&&ACC.st&&ACC.st.g&&!rows.some(r=>r.uid===ACC.uid)){
       let rank='?';try{const above=await firebase.database().ref('stats').orderByChild('w').startAt(ACC.st.w+1).get();rank=above.numChildren()+1}catch(e){}
@@ -463,6 +467,39 @@ async function openLeaders(){
       :`<div class="nm" style="font-size:15px">Пока никого нет. Сыграйте онлайн-партию с аккаунтом — и станьте первым! 🏆</div>`;
   }catch(e){box.textContent='Не удалось загрузить таблицу. Проверьте интернет.'}
 }
+const AVC={},AVW={},AVOK=/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/;
+function avLoad(uid){
+  if(!uid||AVW[uid]||!window.firebase||!firebase.apps.length)return;AVW[uid]=1;
+  firebase.database().ref('avatars/'+uid).on('value',s=>{
+    const v=s.val(),d=v&&typeof v.d==='string'&&AVOK.test(v.d)?v.d:'';
+    if(AVC[uid]===d)return;AVC[uid]=d;
+    if(G)oRender();else if(mode)render();
+    const pv=document.getElementById('accov');if(ACC&&uid===ACC.uid&&pv&&pv.dataset.view==='profile')openAccount('profile');
+  },()=>{});
+}
+async function avGet(uid){
+  if(!uid||uid in AVC)return;
+  try{const v=(await firebase.database().ref('avatars/'+uid).get()).val();AVC[uid]=v&&typeof v.d==='string'&&AVOK.test(v.d)?v.d:''}catch(e){}
+}
+function avImg(uid,emo){if(uid){avLoad(uid);if(AVC[uid])return `<img src="${AVC[uid]}" alt="">`}return emo}
+async function avUpload(file){
+  if(!ACC)return 'Войдите в аккаунт.';
+  if(!file||!/^image\//.test(file.type))return 'Выберите картинку (JPG или PNG).';
+  if(file.size>20e6)return 'Файл слишком большой.';
+  const url=URL.createObjectURL(file);
+  try{
+    const img=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=url});
+    const S=128,c=document.createElement('canvas');c.width=c.height=S;const x=c.getContext('2d');
+    const w=img.naturalWidth,h=img.naturalHeight,m=Math.min(w,h);
+    x.fillStyle='#222';x.fillRect(0,0,S,S);x.imageSmoothingQuality='high';
+    x.drawImage(img,(w-m)/2,(h-m)/2,m,m,0,0,S,S);
+    let d=c.toDataURL('image/jpeg',0.82);if(d.length>28000)d=c.toDataURL('image/jpeg',0.6);
+    await firebase.database().ref('avatars/'+ACC.uid).set({d,t:firebase.database.ServerValue.TIMESTAMP});
+    return '';
+  }catch(e){return 'Не удалось загрузить фото. Попробуйте другую картинку.'}
+  finally{URL.revokeObjectURL(url)}
+}
+async function avRemove(){if(ACC)try{await firebase.database().ref('avatars/'+ACC.uid).remove()}catch(e){}}
 const DEVB='<span class="devb" title="Разработчик игры">🛠 DEV</span>';
 const KZ='<svg class="kz" viewBox="0 0 40 40"><use href="#kz"/></svg>';
 function coinBadge(){return ACC?`<span class="coin" onclick="openAccount('profile')" title="Козыри">${KZ}${ACC.coins}</span>`:''}
@@ -511,7 +548,7 @@ function openAccount(view){
   const d=document.createElement('div');d.className='ov';d.id='accov';d.dataset.view=view;
   const x=`<button class="ic" style="position:absolute;right:10px;top:10px;margin:0" onclick="closeAccount()" aria-label="Закрыть">✕</button>`;
   const err='<div id="accerr" class="nm" style="color:#ffb3b3;min-height:18px"></div>';
-  const link=(t,v)=>`<button onclick="openAccount('${v}')" style="background:none;border:0;color:#ffd54a;font:600 14px system-ui,sans-serif;cursor:pointer;text-decoration:underline">${t}</button>`;
+  const link=(t,v)=>`<button onclick="${v==='#avf'?"document.getElementById('avf').click()":`openAccount('${v}')`}" style="background:none;border:0;color:#ffd54a;font:600 14px system-ui,sans-serif;cursor:pointer;text-decoration:underline">${t}</button>`;
   let h='';
   if(view==='welcome')h=`<div class="big">Добро пожаловать! 🃏</div>
     <div class="nm" style="font-size:15px">Зарегистрируйтесь и получите <b>30 козырей</b> ${KZ.replace('class="kz"','class="kz" style="width:20px;height:20px;vertical-align:-4px"')}</div>
@@ -534,7 +571,10 @@ function openAccount(view){
     <input id="a2" ${IN} type="password" placeholder="Новый пароль" autocomplete="new-password">
     <input id="a3" ${IN} type="password" placeholder="Повторите пароль" autocomplete="new-password">
     ${err}<button class="btn" id="ago">Сменить пароль</button>${link('Назад ко входу','login')}`;
-  else if(view==='profile'&&ACC)h=`<div class="av" style="margin:0 auto;width:64px;height:64px;font-size:34px">🙂</div>
+  else if(view==='profile'&&ACC)h=`<div class="av" style="margin:0 auto;width:88px;height:88px;font-size:46px;cursor:pointer" onclick="document.getElementById('avf').click()" title="Сменить фото">${avImg(ACC.uid,'🙂')}<em style="right:-8px;bottom:-6px;font-size:15px;padding:3px 6px">📷</em></div>
+    <input type="file" id="avf" accept="image/*" style="display:none">
+    <div style="display:flex;gap:14px;justify-content:center">${link('Сменить фото','#avf')}${AVC[ACC.uid]?`<button onclick="avRemove()" style="background:none;border:0;color:#ffb3b3;font:600 14px system-ui,sans-serif;cursor:pointer;text-decoration:underline">Удалить фото</button>`:''}</div>
+    <div id="averr" class="nm" style="color:#ffb3b3;min-height:0"></div>
     <div class="big">${esc(ACC.nick)}</div>${ACC.dev?'<div><span class="devb" style="font-size:14px;padding:4px 12px">🛠 Разработчик игры</span></div>':''}
     <div class="coin" style="align-self:center;font-size:20px;padding:6px 16px 6px 8px;cursor:default">${KZ.replace('class="kz"','class="kz" style="width:28px;height:28px"')}${ACC.coins} козырей</div>
     <div class="nm" style="font-size:15px">🏆 Побед: <b>${(ACC.st||{}).w||0}</b> · Игр: <b>${(ACC.st||{}).g||0}</b></div>
@@ -547,6 +587,8 @@ function openAccount(view){
   d.innerHTML=`<div class="box" style="position:relative;min-width:270px;max-width:calc(100vw - 40px);box-sizing:border-box;gap:14px">${view==='code'?'':x}${h}</div>`;
   document.body.appendChild(d);
   d.onclick=e=>{if(e.target===d&&view!=='code')closeAccount()};
+  const avf=d.querySelector('#avf');
+  if(avf)avf.onchange=async()=>{const e=d.querySelector('#averr');if(e)e.textContent='Загрузка…';const r=await avUpload(avf.files[0]);const e2=document.getElementById('averr');if(e2)e2.textContent=r};
   const go=d.querySelector('#ago'),v=id=>(d.querySelector(id)||{}).value||'',say=t=>{d.querySelector('#accerr').textContent=t};
   setTimeout(()=>d.querySelector('input')?.focus(),50);
   d.querySelectorAll('input').forEach(i=>i.onkeydown=e=>{if(e.key==='Enter')go?.click()});
@@ -873,7 +915,7 @@ function oRender(){
     const cnt=g.ready?g.h[i].length:0,show=Math.min(cnt,8),prev=Math.min(oOppSeen[i]??0,show);oOppSeen[i]=show;
     const backs=Array.from({length:show},(_,k)=>`<div class="c b mini${k>=prev?' dealb':''}"${k>=prev?` style="animation-delay:${(k-prev)*70}ms"`:''}></div>`).join('');
     const cls=g.ready&&!g.end&&!g.out[i]?(i===g.def?' def':i===g.att?' att':''):'';
-    return `<div class="opp${cls}"><div class="av">${EM[i]}<em>${g.ready?cnt:'–'}</em></div><div class="nm">${g.j[i]?esc(pn(g,i)):'…'}${ADMINS[g.u[i]]?' '+DEVB:''}<br><small>${status(i)}</small></div><div class="minis">${backs}</div></div>`;
+    return `<div class="opp${cls}"><div class="av">${avImg(g.u[i],EM[i])}<em>${g.ready?cnt:'–'}</em></div><div class="nm">${g.j[i]?esc(pn(g,i)):'…'}${ADMINS[g.u[i]]?' '+DEVB:''}<br><small>${status(i)}</small></div><div class="minis">${backs}</div></div>`;
   }).join('');
   let body;
   if(!g.ready){
@@ -906,7 +948,7 @@ function oRender(){
     body=`<div class="opps">${opps}</div>
   <div class="table">${dk}<div class="tcards">${tb||'<div class="empty">Стол пуст</div>'}</div></div>
   <div class="pill">${onote||m}</div><div class="acts">${acts}</div>
-  <div class="pl"><div class="av${myCls}">${EM[me]}<em>${mine.length}</em></div><div class="nm">${esc(pn(g,me))} (вы)${ADMINS[g.u[me]]?' '+DEVB:''}${status(me)?' · '+status(me):''}</div></div>
+  <div class="pl"><div class="av${myCls}">${avImg(g.u[me],EM[me])}<em>${mine.length}</em></div><div class="nm">${esc(pn(g,me))} (вы)${ADMINS[g.u[me]]?' '+DEVB:''}${status(me)?' · '+status(me):''}</div></div>
   <div class="row hand" style="--ov:${ovl}px">${hand}</div>${end}`;
   }
   $a().innerHTML=`<div class="hd"><b>🌐 Durak Online<small>${g.perev?'переводной':'подкидной'} · ${g.np} игрока · код ${ocode}${g.u.every(x=>x)&&new Set(g.u).size===g.np?' · 🏆 рейтинговая':''}</small></b><span class="hr">${coinBadge()}<button class="mbtn lbb" onclick="openLeaders()" title="Лидеры" aria-label="Таблица лидеров">🏆</button><button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>${body}`;
