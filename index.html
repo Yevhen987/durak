@@ -82,6 +82,7 @@ html[data-cards="black"] .c.b{background:repeating-linear-gradient(45deg,#1d1d21
 </defs></svg>
 <main id="app"></main>
 <script>
+const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const S=['♠','♥','♦','♣'],N={11:'В',12:'Д',13:'К',14:'Т'};
 let deck,trump,P,B,table,att,mode,msg,limit,discard,gen=0,perev=false,muted=false,AC,wins=0,losses=0,hint='';
 const later=(f,ms)=>{const g=gen;setTimeout(()=>{if(g===gen)f()},ms)};
@@ -286,12 +287,12 @@ function render(){
   const live=mode!=='end';
   const ov=mode==='end'?`<div class="ov"><div class="box"><div class="big">${msg}</div><button class="btn" onclick="init()">Сыграть ещё</button></div></div>`:'';
   document.getElementById('app').innerHTML=
-   `<div class="hd"><b>🃏 Дурак<small>${perev?'переводной':'подкидной'} · ${wins}:${losses}</small></b><span><button class="ic" onclick="setTable()" title="Цвет стола">🎨</button><button class="ic" onclick="setCards()" title="Вид карт">🎴</button><button class="ic" onclick="setMode()" title="Режим игры">🔀</button><button class="ic" onclick="setMute()" title="Звук">${muted?'🔇':'🔊'}</button><button class="ic" onclick="lobby()" title="Онлайн">🌐</button><button class="ic" onclick="showHint()" title="Подсказка">💡</button><button class="ic" onclick="init()" title="Новая игра">↻</button></span></div>
+   `<div class="hd"><b>🃏 Дурак<small>${perev?'переводной':'подкидной'} · ${wins}:${losses}</small></b><span><button class="ic" onclick="askName()" title="Никнейм">👤</button><button class="ic" onclick="setTable()" title="Цвет стола">🎨</button><button class="ic" onclick="setCards()" title="Вид карт">🎴</button><button class="ic" onclick="setMode()" title="Режим игры">🔀</button><button class="ic" onclick="setMute()" title="Звук">${muted?'🔇':'🔊'}</button><button class="ic" onclick="lobby()" title="Онлайн">🌐</button><button class="ic" onclick="showHint()" title="Подсказка">💡</button><button class="ic" onclick="init()" title="Новая игра">↻</button></span></div>
     <div class="pl"><div class="av">🤖<em>${B.length}</em></div><div class="nm">Бот${live?' · '+(att==='b'?'атакует':'отбивается'):''}</div><div class="row bot">${B.map(()=>'<div class="c b"></div>').join('')}</div></div>
     <div class="table">${dk}<div class="tcards">${tb||'<div class="empty">Стол пуст</div>'}</div></div>
     <div class="pill">${msg}</div>
     <div class="acts">${acts}</div>
-    <div class="pl"><div class="av">🙂<em>${P.length}</em></div><div class="nm">Вы${live?' · '+(att==='p'?'атакуете':'отбиваетесь'):''}</div></div>
+    <div class="pl"><div class="av">🙂<em>${P.length}</em></div><div class="nm">${esc(pName())}${live?' · '+(att==='p'?'атакуете':'отбиваетесь'):''}</div></div>
     <div class="row hand" style="--ov:${P.length>1?Math.max(-36,Math.min(-26,(Math.min(innerWidth,560)-24-54)/(P.length-1)-54)):-26}px">${hand}</div>${ov}`;
 }
 try{theme=localStorage.getItem('cards')==='black'?'black':'classic'}catch(e){}
@@ -300,6 +301,29 @@ try{const t=TC.indexOf(localStorage.getItem('table'));if(t>=0)tcol=t}catch(e){}
 document.documentElement.dataset.table=TC[tcol];
 try{perev=localStorage.getItem('perev')==='1';muted=localStorage.getItem('muted')==='1'}catch(e){}
 try{const s=(localStorage.getItem('score')||'0:0').split(':');wins=+s[0]||0;losses=+s[1]||0}catch(e){}
+/* ===== NICKNAME ===== */
+function pName(){let n='';try{n=localStorage.getItem('oname')||''}catch(e){}return n||'Вы'}
+function askName(first){
+  let cur='';try{cur=localStorage.getItem('oname')||''}catch(e){}
+  const d=document.createElement('div');d.className='ov';d.id='nameov';
+  d.innerHTML=`<div class="box"><div class="big">${first?'Добро пожаловать! 🃏':'Ваш никнейм'}</div>
+  <div class="nm" style="font-size:15px">${first?'Как вас называть? Это имя увидят соперники в онлайне.':'Введите новое имя (до 12 символов).'}</div>
+  <input id="nmi" maxlength="12" autocomplete="off" placeholder="Никнейм" style="font:700 22px system-ui,sans-serif;text-align:center;padding:10px;border-radius:10px;border:0;width:220px;margin:0 auto">
+  <div id="nmerr" class="nm" style="color:#ffb3b3;min-height:16px"></div>
+  <button class="btn" id="nmok">Сохранить</button></div>`;
+  document.body.appendChild(d);
+  const inp=d.querySelector('#nmi');inp.value=cur;setTimeout(()=>inp.focus(),50);
+  const save=()=>{
+    const v=inp.value.replace(/\s+/g,' ').trim();
+    if(v.length<2){d.querySelector('#nmerr').textContent='Минимум 2 символа.';return}
+    try{localStorage.setItem('oname',v.slice(0,12))}catch(e){}
+    d.remove();
+    const on=document.getElementById('on');if(on)on.value=v.slice(0,12);
+    if(G){if(oref&&G.n){const g=structuredClone(G);g.n[me]=v.slice(0,12);oSet(g)}}else if(mode)render();
+  };
+  d.querySelector('#nmok').onclick=save;
+  inp.onkeydown=e=>{if(e.key==='Enter')save()};
+}
 /* ===== FIREBASE (Realtime Database) ===== */
 const FB_CONFIG={
   apiKey:"AIzaSyCbL2W1-WK0GKKA9a7JD_2uW8IzVoZWhio",
@@ -346,7 +370,6 @@ const arr=x=>Array.isArray(x)?x:x?Object.values(x):[];
 const oV=c=>c.r+(c.s===G.trump.s?100:0);
 const oB=(g,a,d)=>d.s===a.s?d.r>a.r:d.s===g.trump.s;
 const oSay=m=>{onote=m;oRender()};
-const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function myName(){
   const el=document.getElementById('on');let n=el?el.value.trim():'';
   if(!n){try{n=localStorage.getItem('oname')||''}catch(e){}}
@@ -456,7 +479,7 @@ function oRender(){
   const hand=mine.map((c,i)=>({c,i})).sort((x,y)=>oV(x.c)-oV(y.c)).map(({c,i})=>face(c,'','button',`onclick="oPlay(${i})"`)).join('');
   const ovl=mine.length>1?Math.max(-36,Math.min(-26,(Math.min(innerWidth,560)-24-54)/(mine.length-1)-54)):-26;
   const end=G.end?`<div class="ov"><div class="box"><div class="big">${G.end==='draw'?'Ничья!':G.end===String(me)?'Вы выиграли! 🎉':'Вы остались дураком.'}</div><div class="nm" style="font-size:16px">${score}</div><button class="btn" onclick="oAgain()">Сыграть ещё</button></div></div>`:'';
-  $a().innerHTML=`<div class="hd"><b>🌐 Дурак онлайн<small>${G.perev?'переводной':'подкидной'} · код ${ocode} · ${score}</small></b><span><button class="ic" onclick="oLeave()" title="Выйти">✕</button></span></div>
+  $a().innerHTML=`<div class="hd"><b>🌐 Дурак онлайн<small>${G.perev?'переводной':'подкидной'} · код ${ocode} · ${score}</small></b><span><button class="ic" onclick="askName()" title="Никнейм">👤</button><button class="ic" onclick="oLeave()" title="Выйти">✕</button></span></div>
   <div class="pl"><div class="av">🧑<em>${opp.length}</em></div><div class="nm">${nOp}</div><div class="row bot">${opp.map(()=>'<div class="c b"></div>').join('')}</div></div>
   <div class="table">${dk}<div class="tcards">${tb||'<div class="empty">Стол пуст</div>'}</div></div>
   <div class="pill">${onote||m}</div><div class="acts">${acts}</div>
@@ -475,5 +498,6 @@ async function oResume(){
   }catch(e){}
 }
 init();oResume();
+try{if(!localStorage.getItem('oname'))askName(true)}catch(e){}
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script></body></html>
