@@ -72,6 +72,14 @@ html[data-cards="black"] .c.b{background:repeating-linear-gradient(45deg,#1d1d21
 :root[data-table="red"]{--bg:#2e0d17;--felt1:#b8384f;--felt2:#6a1830;--wood:#3b2a14}
 :root[data-table="purple"]{--bg:#1f1236;--felt1:#8056c8;--felt2:#432a78;--wood:#3b2a14}
 :root[data-table="gray"]{--bg:#121417;--felt1:#555b66;--felt2:#262a30;--wood:#6b4a26}
+button.c.deal,.c.deal{animation:deal .42s cubic-bezier(.2,.8,.3,1) backwards}
+@keyframes deal{from{transform:translate(-140px,-320px) rotate(-25deg) scale(.6);opacity:0}}
+.c.dealb{animation:dealb .42s cubic-bezier(.2,.8,.3,1) backwards}
+@keyframes dealb{from{transform:translate(-160px,180px) rotate(20deg) scale(.6);opacity:0}}
+.c.fu{animation:fu .38s cubic-bezier(.2,.8,.3,1) backwards}
+@keyframes fu{from{transform:translateY(280px) rotate(10deg) scale(.85);opacity:0}}
+.c.fd{animation:fd .38s cubic-bezier(.2,.8,.3,1) backwards}
+@keyframes fd{from{transform:translateY(-240px) rotate(-10deg) scale(.85);opacity:0}}
 .hd b small{display:block;font-size:11px;font-weight:400;opacity:.7;letter-spacing:0}
 </style></head>
 <body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -130,7 +138,7 @@ function init(){
   gen++;deck=[];discard=[];
   for(let s=0;s<4;s++)for(let r=6;r<=14;r++)deck.push({s,r});
   for(let i=deck.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[deck[i],deck[j]]=[deck[j],deck[i]]}
-  trump=deck[0];P=[];B=[];table=[];draw(P);draw(B);
+  trump=deck[0];P=[];B=[];table=[];handSeen.clear();oppSeen=0;draw(P);draw(B);
   const low=h=>Math.min(99,...h.filter(c=>c.s===trump.s).map(c=>c.r));
   att=low(P)<=low(B)?'p':'b';
   start('Новая игра.');
@@ -222,6 +230,7 @@ function take(){
 function bito(){if(mode==='pAtk'&&table.length&&table.every(t=>t.d))endRound(false)}
 function endRound(took){
   const pDef=att==='b';
+  sweepFX(took?(pDef?'down':'up'):'bito');
   const cards=table.flatMap(t=>t.d?[t.a,t.d]:[t.a]);table=[];
   if(took)(pDef?P:B).push(...cards);else discard.push(...cards);
   snd(took?'take':'sweep');
@@ -263,7 +272,28 @@ function setCards(){
   try{localStorage.setItem('cards',theme)}catch(e){}
   render();
 }
-let shown=new Set();
+let shown=new Set(),handSeen=new Set(),oppSeen=0;
+function sweepFX(kind){
+  const box=document.querySelector('.tcards');if(!box)return;
+  box.querySelectorAll('.c').forEach((el,i)=>{
+    const r=el.getBoundingClientRect(),c=el.cloneNode(true);
+    c.classList.remove('pop','fu','fd','d','deal');
+    Object.assign(c.style,{position:'fixed',left:r.left+'px',top:r.top+'px',margin:'0',zIndex:4,pointerEvents:'none',transition:'transform .5s ease-in, opacity .5s ease-in'});
+    document.body.appendChild(c);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      c.style.transform=kind==='bito'?`translate(${innerWidth-r.left+60}px,-60px) rotate(${40+i*12}deg)`:kind==='up'?`translateY(${-r.top-120}px) scale(.7)`:`translateY(${innerHeight-r.top+40}px) scale(.7)`;
+      c.style.opacity='0';
+    }));
+    setTimeout(()=>c.remove(),560);
+  });
+}
+function dealCls(hand,seen){
+  let k=0;const out=hand.map(c=>{const key=ck(c);if(seen.has(key))return ['',''];return ['deal',` style="animation-delay:${(k++)*70}ms"`]});
+  seen.clear();hand.forEach(c=>seen.add(ck(c)));return out;
+}
+function oppRow(n,prev){
+  return Array.from({length:n},(_,i)=>i>=prev?`<div class="c b dealb" style="animation-delay:${(i-prev)*70}ms"></div>`:'<div class="c b"></div>').join('');
+}
 const ck=c=>c.s+'-'+c.r;
 function canPlay(c){
   if(mode==='pAtk'||mode==='bTake')return table.length<limit&&(!table.length||ranks().has(c.r));
@@ -272,11 +302,13 @@ function canPlay(c){
 }
 function render(){
   P.sort((a,b)=>val(a)-val(b));
-  const pop=c=>shown.has(ck(c))?'':'pop';
-  const tb=table.map(t=>`<div class="pair">${face(t.a,pop(t.a))}${t.d?face(t.d,'d '+pop(t.d)):''}</div>`).join('');
+  const pop=(c,mine)=>shown.has(ck(c))?'':mine?'fu':'fd';
+  const tb=table.map(t=>`<div class="pair">${face(t.a,pop(t.a,att==='p'))}${t.d?face(t.d,'d '+pop(t.d,att!=='p')):''}</div>`).join('');
   shown=new Set(table.flatMap(t=>t.d?[ck(t.a),ck(t.d)]:[ck(t.a)]));
   const act=['pAtk','pDef','bTake'].includes(mode);
-  const hand=P.map((c,i)=>face(c,ck(c)===hint?'hl':'','button',`onclick="play(${i})"`)).join('');
+  const dl=dealCls(P,handSeen);
+  const hand=P.map((c,i)=>face(c,(ck(c)===hint?'hl ':'')+dl[i][0],'button',`onclick="play(${i})"${dl[i][1]}`)).join('');
+  const botRow=oppRow(B.length,Math.min(oppSeen,B.length));oppSeen=B.length;
   const red=trump.s===1||trump.s===2;
   const tr=deck.length?face(trump,'tr'):`<div class="c f s${trump.s} tr dim"><svg class="mid" viewBox="0 0 24 24"><use href="#p${trump.s}"/></svg></div>`;
   const dk=`<div class="deckbox">${tr}${deck.length>1?`<div class="c b dk">${deck.length}</div>`:''}<span class="tl ${red?'rd':''}">Козырь ${S[trump.s]}</span></div>`;
@@ -288,7 +320,7 @@ function render(){
   const ov=mode==='end'?`<div class="ov"><div class="box"><div class="big">${msg}</div><button class="btn" onclick="init()">Сыграть ещё</button></div></div>`:'';
   document.getElementById('app').innerHTML=
    `<div class="hd"><b>🃏 Дурак<small>${perev?'переводной':'подкидной'} · ${wins}:${losses}</small></b><span><button class="ic" onclick="askName()" title="Никнейм">👤</button><button class="ic" onclick="setTable()" title="Цвет стола">🎨</button><button class="ic" onclick="setCards()" title="Вид карт">🎴</button><button class="ic" onclick="setMode()" title="Режим игры">🔀</button><button class="ic" onclick="setMute()" title="Звук">${muted?'🔇':'🔊'}</button><button class="ic" onclick="lobby()" title="Онлайн">🌐</button><button class="ic" onclick="showHint()" title="Подсказка">💡</button><button class="ic" onclick="init()" title="Новая игра">↻</button></span></div>
-    <div class="pl"><div class="av">🤖<em>${B.length}</em></div><div class="nm">Бот${live?' · '+(att==='b'?'атакует':'отбивается'):''}</div><div class="row bot">${B.map(()=>'<div class="c b"></div>').join('')}</div></div>
+    <div class="pl"><div class="av">🤖<em>${B.length}</em></div><div class="nm">Бот${live?' · '+(att==='b'?'атакует':'отбивается'):''}</div><div class="row bot">${botRow}</div></div>
     <div class="table">${dk}<div class="tcards">${tb||'<div class="empty">Стол пуст</div>'}</div></div>
     <div class="pill">${msg}</div>
     <div class="acts">${acts}</div>
@@ -363,6 +395,7 @@ function getDb(){
   return fbPromise;
 }
 /* ===== ONLINE (2 players) ===== */
+let oShown=new Set(),oHandSeen=new Set(),oOppSeen=0;
 let G=null,me=0,oref=null,ounsub=null,odb=null,ocode='',onote='';
 const $a=()=>document.getElementById('app');
 const cl=c=>({s:(+c.s)&3,r:Math.min(14,Math.max(6,+c.r||6))});
@@ -397,7 +430,7 @@ function oNew(){
   return {deck:d,trump:t,h,table:[],att:low(h[0])<=low(h[1])?0:1,take:false,perev:perev,limit:6,end:'',ready:true,ts:Date.now()};
 }
 async function lobby(){
-  gen++;if(ounsub){ounsub();ounsub=null}G=null;
+  gen++;if(ounsub){ounsub();ounsub=null}G=null;oHandSeen.clear();oOppSeen=0;oShown.clear();
   $a().innerHTML=`<div class="hd"><b>🌐 Онлайн<small>Дурак на двоих</small></b><button class="ic" onclick="init()" title="Назад">✕</button></div>
   <div class="box" style="margin-top:24px"><div class="nm">Ваше имя:</div><input id="on" maxlength="12" autocomplete="off" placeholder="Игрок" style="font:700 20px system-ui,sans-serif;text-align:center;padding:8px;border-radius:10px;border:0;width:200px;margin:0 auto"><button class="btn" onclick="oCreate()">Создать игру</button><div class="nm">или введите код друга:</div><input id="oc" maxlength="4" inputmode="numeric" placeholder="0000" autocomplete="off" style="font:700 26px system-ui,sans-serif;text-align:center;text-transform:uppercase;padding:8px;border-radius:10px;border:0;width:150px;margin:0 auto"><button class="btn" onclick="oJoin()">Войти</button><div id="om" class="nm">Подключение…</div></div>`;
   try{const n=localStorage.getItem('oname');if(n)document.getElementById('on').value=n}catch(e){}
@@ -430,6 +463,10 @@ function oWatch(code){
   ounsub=oref.onSnapshot(s=>{
     if(!s.exists)return;const g=s.data();onote='';
     const h=arr(g.h);
+    const prev=G;
+    const nt=arr(g.table);
+    if(prev&&prev.table.length&&!nt.length)sweepFX(prev.take?((1-prev.att)===me?'down':'up'):'bito');
+    if(prev&&arr(g.deck).length>prev.deck.length){oHandSeen.clear();oOppSeen=0}
     G={...g,trump:cl(g.trump),deck:arr(g.deck).map(cl),h:[0,1].map(i=>arr(h[i]).map(cl)),table:arr(g.table).map(t=>t.d?{a:cl(t.a),d:cl(t.d)}:{a:cl(t.a)}),n:[0,1].map(i=>String((g.n||{})[i]||'')),sc:[0,1].map(i=>+((g.sc||{})[i])||0)};
     oRender();
   },()=>{$a().textContent='Ошибка связи с игрой.'});
@@ -467,13 +504,15 @@ function oTake(){if(oTurn()==='def'){const g=structuredClone(G);g.take=true;oSet
 function oBito(){if(oTurn()==='atk'&&G.table.length)oEnd(structuredClone(G),false)}
 function oDone(){if(oTurn()==='add')oEnd(structuredClone(G),true)}
 function oAgain(){const g=oNew();g.n=G.n;g.sc=G.sc;oSet(g)}
-function oLeave(){if(ounsub){ounsub();ounsub=null}G=null;try{localStorage.removeItem('osess')}catch(e){}init()}
+function oLeave(){oHandSeen.clear();oOppSeen=0;oShown.clear();if(ounsub){ounsub();ounsub=null}G=null;try{localStorage.removeItem('osess')}catch(e){}init()}
 function oRender(){
   if(!G)return;
   const st=oTurn(),mine=G.h[me],opp=G.h[1-me],red=G.trump.s===1||G.trump.s===2;
   const tr=G.deck.length?face(G.trump,'tr'):`<div class="c f s${G.trump.s} tr dim"><svg class="mid" viewBox="0 0 24 24"><use href="#p${G.trump.s}"/></svg></div>`;
   const dk=`<div class="deckbox">${tr}${G.deck.length>1?`<div class="c b dk">${G.deck.length}</div>`:''}<span class="tl ${red?'rd':''}">Козырь ${S[G.trump.s]}</span></div>`;
-  const tb=G.table.map(t=>`<div class="pair">${face(t.a)}${t.d?face(t.d,'d'):''}</div>`).join('');
+  const op=(c,mine)=>oShown.has(ck(c))?'':mine?'fu':'fd';
+  const tb=G.table.map(t=>`<div class="pair">${face(t.a,op(t.a,G.att===me))}${t.d?face(t.d,'d '+op(t.d,G.att!==me)):''}</div>`).join('');
+  oShown=new Set(G.table.flatMap(t=>t.d?[ck(t.a),ck(t.d)]:[ck(t.a)]));
   let acts='';
   if(st==='def')acts='<button class="btn red" onclick="oTake()">Беру</button>';
   if(st==='atk'&&G.table.length)acts='<button class="btn" onclick="oBito()">Бито</button>';
@@ -481,11 +520,14 @@ function oRender(){
   const nMe=esc(G.n[me]||'Вы'),nOp=esc(G.n[1-me]||'Соперник');
   const score=`${nMe} <b>${G.sc[me]} : ${G.sc[1-me]}</b> ${nOp}`;
   const m=!G.ready?'Код игры: '+ocode+'. Отправьте его другу.':st==='wait'?(G.take?nOp+' берёт карты.':'Ходит '+nOp+'…'):st==='atk'?(G.table.length?'Подкиньте или нажмите «Бито».':'Ваш ход.'):st==='def'?'Отбейтесь'+(G.perev?', переведите':'')+' или возьмите.':nOp+' берёт. Подкиньте или нажмите «Готово».';
-  const hand=mine.map((c,i)=>({c,i})).sort((x,y)=>oV(x.c)-oV(y.c)).map(({c,i})=>face(c,'','button',`onclick="oPlay(${i})"`)).join('');
+  const srt=mine.map((c,i)=>({c,i})).sort((x,y)=>oV(x.c)-oV(y.c));
+  const odl=dealCls(srt.map(x=>x.c),oHandSeen);
+  const hand=srt.map(({c,i},k)=>face(c,odl[k][0],'button',`onclick="oPlay(${i})"${odl[k][1]}`)).join('');
+  const oRow=oppRow(opp.length,Math.min(oOppSeen,opp.length));oOppSeen=opp.length;
   const ovl=mine.length>1?Math.max(-36,Math.min(-26,(Math.min(innerWidth,560)-24-54)/(mine.length-1)-54)):-26;
   const end=G.end?`<div class="ov"><div class="box"><div class="big">${G.end==='draw'?'Ничья!':G.end===String(me)?'Вы выиграли! 🎉':'Вы остались дураком.'}</div><div class="nm" style="font-size:16px">${score}</div><button class="btn" onclick="oAgain()">Сыграть ещё</button></div></div>`:'';
   $a().innerHTML=`<div class="hd"><b>🌐 Дурак онлайн<small>${G.perev?'переводной':'подкидной'} · код ${ocode} · ${score}</small></b><span><button class="ic" onclick="askName()" title="Никнейм">👤</button><button class="ic" onclick="oLeave()" title="Выйти">✕</button></span></div>
-  <div class="pl"><div class="av">🧑<em>${opp.length}</em></div><div class="nm">${nOp}</div><div class="row bot">${opp.map(()=>'<div class="c b"></div>').join('')}</div></div>
+  <div class="pl"><div class="av">🧑<em>${opp.length}</em></div><div class="nm">${nOp}</div><div class="row bot">${oRow}</div></div>
   <div class="table">${dk}<div class="tcards">${tb||'<div class="empty">Стол пуст</div>'}</div></div>
   <div class="pill">${onote||m}</div><div class="acts">${acts}</div>
   <div class="pl"><div class="av">🙂<em>${mine.length}</em></div><div class="nm">${nMe} (вы)</div></div>
