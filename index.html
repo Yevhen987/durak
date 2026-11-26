@@ -152,6 +152,19 @@ html[data-skin="space"] .table{background:radial-gradient(1px 1px at 20% 30%,#ff
 .segb.wide{width:auto;padding:0 18px;font-size:15px}
 .skinpv{width:100%}
 .skinpv .table{min-height:0;height:62px;padding:0;border-width:3px;border-radius:10px;position:relative;display:block}
+.av.fr-glow{--hf:0.66;border:0;border-radius:14%;margin:calc(var(--avs,44px) * 0.206)}
+.av.fr-wings{--hf:0.648;border:0;border-radius:50%;margin:calc(var(--avs,44px) * 0.217)}
+.av.fr-rose{--hf:0.573;border:0;border-radius:50%;margin:calc(var(--avs,44px) * 0.298)}
+.av.fr-blaze{--hf:0.715;border:0;border-radius:50%;margin:calc(var(--avs,44px) * 0.159)}
+.av.fr-laurel{--hf:0.585;border:0;border-radius:50%;margin:calc(var(--avs,44px) * 0.284)}
+.av.fr-club{--hf:0.553;border:0;border-radius:50%;margin:calc(var(--avs,44px) * 0.323)}
+.av.fr-star{--hf:0.559;border:0;border-radius:50%;margin:calc(var(--avs,44px) * 0.316)}
+.av.fr-jade{--hf:0.759;border:0;border-radius:14%;margin:calc(var(--avs,44px) * 0.127)}
+.av.fr-ruby{--hf:0.673;border:0;border-radius:14%;margin:calc(var(--avs,44px) * 0.194)}
+.av.fr-moon{--hf:0.527;border:0;border-radius:50%;margin:calc(var(--avs,44px) * 0.359)}
+.av.fr-blade{--hf:0.717;border:0;border-radius:14%;margin:calc(var(--avs,44px) * 0.158)}
+.av img.frimg{position:absolute;left:50%;top:50%;width:calc(100% / var(--hf));height:auto;max-width:none;transform:translate(-50%,-50%);pointer-events:none;z-index:1;border-radius:0;object-fit:contain}
+.av em{z-index:2}
 .hd b small{display:block;font-size:11px;font-weight:400;opacity:.7;letter-spacing:0}
 </style></head>
 <body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -398,7 +411,7 @@ function render(){
     <div class="table">${dk}<div class="tcards">${tb||''}</div></div>
     <div class="pill">${msg}</div>
     <div class="acts">${acts}</div>
-    <div class="pl"><div class="av${frCls(ACC&&ACC.uid)}">${avImg(ACC&&ACC.uid,'🙂')}<em>${P.length}</em></div><div class="nm">${esc(pName())}${ACC&&ACC.dev?' '+DEVB:''}${live?' · '+(att==='p'?'атакуете':'отбиваетесь'):''}</div></div>
+    <div class="pl"><div class="av${frCls(ACC&&ACC.uid)}">${avImg(ACC&&ACC.uid,'🙂')}${frImg(frameOf(ACC&&ACC.uid))}<em>${P.length}</em></div><div class="nm">${esc(pName())}${ACC&&ACC.dev?' '+DEVB:''}${live?' · '+(att==='p'?'атакуете':'отбиваетесь'):''}</div></div>
     <div class="row hand" style="--ov:${P.length>1?Math.max(-36,Math.min(-26,(Math.min(innerWidth,560)-24-54)/(P.length-1)-54)):-26}px">${hand}</div>${ov}`;
 }
 try{theme=localStorage.getItem('cards')==='black'?'black':'classic'}catch(e){}
@@ -607,7 +620,7 @@ function openAccount(view){
     <input id="a2" ${IN} type="password" placeholder="Новый пароль" autocomplete="new-password">
     <input id="a3" ${IN} type="password" placeholder="Повторите пароль" autocomplete="new-password">
     ${err}<button class="btn" id="ago">Сменить пароль</button>${link('Назад ко входу','login')}`;
-  else if(view==='profile'&&ACC)h=`<div class="av${frCls(ACC.uid)}" style="margin:0 auto;width:88px;height:88px;font-size:46px;cursor:pointer" onclick="document.getElementById('avf').click()" title="Сменить фото">${avImg(ACC.uid,'🙂')}<em style="right:-8px;bottom:-6px;font-size:15px;padding:3px 6px">📷</em></div>
+  else if(view==='profile'&&ACC)h=`<div class="av${frCls(ACC.uid)}" style="--avs:88px;margin:0 auto;width:88px;height:88px;font-size:46px;cursor:pointer" onclick="document.getElementById('avf').click()" title="Сменить фото">${avImg(ACC.uid,'🙂')}${frImg(frameOf(ACC.uid))}<em style="right:-8px;bottom:-6px;font-size:15px;padding:3px 6px">📷</em></div>
     <input type="file" id="avf" accept="image/*" style="display:none">
     <div style="display:flex;gap:14px;justify-content:center">${link('Сменить фото','#avf')}${AVC[ACC.uid]?`<button onclick="avRemove()" style="background:none;border:0;color:#ffb3b3;font:600 14px system-ui,sans-serif;cursor:pointer;text-decoration:underline">Удалить фото</button>`:''}</div>
     <div id="averr" class="nm" style="color:#ffb3b3;min-height:0"></div>
@@ -658,6 +671,7 @@ function showCode(code,bonus){
 }
 /* ===== SHOP: frames + table skins ===== */
 const FRAMES=[
+  {id:'glow',n:'Сияние',p:'3,00 €',img:1},{id:'wings',n:'Крылья',p:'3,00 €',img:1},{id:'rose',n:'Роза',p:'3,00 €',img:1},{id:'blaze',n:'Пламя',p:'3,00 €',img:1},{id:'laurel',n:'Чемпион',p:'3,00 €',img:1},{id:'club',n:'Клуб',p:'3,00 €',img:1},{id:'star',n:'Звезда',p:'3,00 €',img:1},{id:'jade',n:'Нефрит',p:'3,00 €',img:1},{id:'ruby',n:'Рубин',p:'3,00 €',img:1},{id:'moon',n:'Луна',p:'3,00 €',img:1},{id:'blade',n:'Клинок',p:'3,00 €',img:1},
   {id:'silver',n:'Серебро',p:'0,99 €'},{id:'gold',n:'Золото',p:'1,99 €'},{id:'neon',n:'Неон',p:'1,49 €'},{id:'ice',n:'Лёд',p:'1,49 €'},
   {id:'emerald',n:'Изумруд',p:'1,49 €'},{id:'fire',n:'Огонь',p:'2,49 €'},{id:'royal',n:'Королевская',p:'2,99 €'},{id:'rainbow',n:'Радуга',p:'2,99 €'}];
 const SKINS=[
@@ -666,6 +680,7 @@ const SKINS=[
 const LKC={},LKW={};
 let myFrame='',mySkin='',shopTab='f';
 try{myFrame=localStorage.getItem('frame')||'';mySkin=localStorage.getItem('skin')||''}catch(e){}
+const frImg=id=>{const f=FRAMES.find(x=>x.id===id);return f&&f.img?`<img class="frimg" src="frames/${id}.webp" alt="">`:''};
 const owns=key=>!!(ACC&&(ACC.dev||(ACC.inv&&ACC.inv[key])));
 function applySkin(){document.documentElement.dataset.skin=mySkin&&owns('s_'+mySkin)?mySkin:''}
 function lkLoad(uid){
@@ -691,7 +706,7 @@ function setSkin(id){
 function shopItem(kind,it){
   const key=kind+'_'+it.id,mine=owns(key),on=kind==='f'?(myFrame===it.id&&mine):(mySkin===it.id&&mine);
   const prev=kind==='f'
-    ?`<div class="av fr-${it.id}" style="width:56px;height:56px;font-size:30px;margin:4px auto">${ACC?avImg(ACC.uid,'🙂'):'🙂'}</div>`
+    ?`<div class="av fr-${it.id}" style="--avs:56px;width:56px;height:56px;font-size:30px;margin:4px auto">${ACC?avImg(ACC.uid,'🙂'):'🙂'}${frImg(it.id)}</div>`
     :`<div class="skinpv" data-skin="${it.id}"><div class="table"><div class="c f s1" style="transform:scale(.42);transform-origin:0 0;position:absolute;left:10px;top:8px"><i class="ix"><b>Т</b></i></div><div class="c f s0" style="transform:scale(.42);transform-origin:0 0;position:absolute;left:34px;top:14px"><i class="ix"><b>К</b></i></div></div></div>`;
   const btn=mine
     ?(on?`<button class="sbtn on" onclick="${kind==='f'?"setFrame('')":"setSkin('')"}">✓ Надето</button>`:`<button class="sbtn" onclick="${kind==='f'?`setFrame('${it.id}')`:`setSkin('${it.id}')`}">Надеть</button>`)
@@ -1005,7 +1020,7 @@ function oRender(){
     const cnt=g.ready?g.h[i].length:0,show=Math.min(cnt,8),prev=Math.min(oOppSeen[i]??0,show);oOppSeen[i]=show;
     const backs=Array.from({length:show},(_,k)=>`<div class="c b mini${k>=prev?' dealb':''}"${k>=prev?` style="animation-delay:${(k-prev)*70}ms"`:''}></div>`).join('');
     const cls=g.ready&&!g.end&&!g.out[i]?(i===g.def?' def':i===g.att?' att':''):'';
-    return `<div class="opp${cls}"><div class="av${frCls(g.u[i])}">${avImg(g.u[i],EM[i])}<em>${g.ready?cnt:'–'}</em></div><div class="nm">${g.j[i]?esc(pn(g,i)):'…'}${ADMINS[g.u[i]]?' '+DEVB:''}<br><small>${status(i)}</small></div><div class="minis">${backs}</div></div>`;
+    return `<div class="opp${cls}"><div class="av${frCls(g.u[i])}">${avImg(g.u[i],EM[i])}${frImg(frameOf(g.u[i]))}<em>${g.ready?cnt:'–'}</em></div><div class="nm">${g.j[i]?esc(pn(g,i)):'…'}${ADMINS[g.u[i]]?' '+DEVB:''}<br><small>${status(i)}</small></div><div class="minis">${backs}</div></div>`;
   }).join('');
   let body;
   if(!g.ready){
@@ -1038,7 +1053,7 @@ function oRender(){
     body=`<div class="opps">${opps}</div>
   <div class="table">${dk}<div class="tcards">${tb||''}</div></div>
   <div class="pill">${onote||m}</div><div class="acts">${acts}</div>
-  <div class="pl"><div class="av${myCls}${frCls(g.u[me])}">${avImg(g.u[me],EM[me])}<em>${mine.length}</em></div><div class="nm">${esc(pn(g,me))} (вы)${ADMINS[g.u[me]]?' '+DEVB:''}${status(me)?' · '+status(me):''}</div></div>
+  <div class="pl"><div class="av${myCls}${frCls(g.u[me])}">${avImg(g.u[me],EM[me])}${frImg(frameOf(g.u[me]))}<em>${mine.length}</em></div><div class="nm">${esc(pn(g,me))} (вы)${ADMINS[g.u[me]]?' '+DEVB:''}${status(me)?' · '+status(me):''}</div></div>
   <div class="row hand" style="--ov:${ovl}px">${hand}</div>${end}`;
   }
   $a().innerHTML=`<div class="hd"><b>🌐 Durak Online<small>${g.perev?'переводной':'подкидной'} · ${g.np} игрока · код ${ocode}${g.u.every(x=>x)&&new Set(g.u).size===g.np?' · 🏆 рейтинговая':''}</small></b><span class="hr">${coinBadge()}<button class="mbtn lbb" onclick="openShop()" title="Магазин" aria-label="Магазин">🛒</button><button class="mbtn lbb" onclick="openLeaders()" title="Лидеры" aria-label="Таблица лидеров">🏆</button><button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>${body}`;
