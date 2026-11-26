@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ru"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#14452c"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png"><title>Дурак</title>
+<meta name="theme-color" content="#14452c"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png"><title>Durak</title>
 <style>
 :root{--bg:#14452c;--fg:#fff;--felt1:#2f8f5d;--felt2:#1a5a39;--wood:#5a3a1e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e2f1f}}
@@ -356,7 +356,7 @@ function render(){
   const live=mode!=='end';
   const ov=mode==='end'?`<div class="ov"><div class="box"><div class="big">${msg}</div><button class="btn" onclick="init()">Сыграть ещё</button></div></div>`:'';
   document.getElementById('app').innerHTML=
-   `<div class="hd"><b>🃏 Дурак<small>${perev?'переводной':'подкидной'} · ${wins}:${losses}</small></b><span class="hr">${coinBadge()}<button class="mbtn lbb" onclick="openLeaders()" title="Лидеры" aria-label="Таблица лидеров">🏆</button><button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>
+   `<div class="hd"><b>🃏 Durak<small>${perev?'переводной':'подкидной'} · ${wins}:${losses}</small></b><span class="hr">${coinBadge()}<button class="mbtn lbb" onclick="openLeaders()" title="Лидеры" aria-label="Таблица лидеров">🏆</button><button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>
     <div class="pl"><div class="av">🤖<em>${B.length}</em></div><div class="nm">Бот${live?' · '+(att==='b'?'атакует':'отбивается'):''}</div><div class="row bot">${botRow}</div></div>
     <div class="table">${dk}<div class="tcards">${tb||'<div class="empty">Стол пуст</div>'}</div></div>
     <div class="pill">${msg}</div>
@@ -791,7 +791,7 @@ function myName(){
 function setNp(k){onp=k;document.querySelectorAll('.segb').forEach(b=>b.classList.toggle('on',+b.dataset.k===k))}
 async function lobby(){
   gen++;if(ounsub){ounsub();ounsub=null}G=null;oHandSeen.clear();oOppSeen={};oShown.clear();
-  $a().innerHTML=`<div class="hd"><b>🌐 Онлайн<small>Дурак на 2–4 игроков</small></b><button class="ic" onclick="init()" title="Назад">✕</button></div>
+  $a().innerHTML=`<div class="hd"><b>🌐 Durak Online<small>онлайн на 2–4 игроков</small></b><button class="ic" onclick="init()" title="Назад">✕</button></div>
   <div class="box" style="margin-top:16px"><div class="nm">Ваше имя:</div><input id="on" maxlength="12" autocomplete="off" placeholder="Игрок" style="font:700 20px system-ui,sans-serif;text-align:center;padding:8px;border-radius:10px;border:0;width:200px;margin:0 auto">
   <div class="nm">Игроков в новой игре:</div><div class="seg">${[2,3,4].map(k=>`<button class="segb${k===onp?' on':''}" data-k="${k}" onclick="setNp(${k})">${k}</button>`).join('')}</div>
   <button class="btn" onclick="oCreate()">Создать игру</button><div class="nm">или введите код друга:</div><input id="oc" maxlength="4" inputmode="numeric" placeholder="0000" autocomplete="off" style="font:700 26px system-ui,sans-serif;text-align:center;padding:8px;border-radius:10px;border:0;width:150px;margin:0 auto"><button class="btn" onclick="oJoin()">Войти</button><div id="om" class="nm">Подключение…</div></div>`;
@@ -909,7 +909,7 @@ function oRender(){
   <div class="pl"><div class="av${myCls}">${EM[me]}<em>${mine.length}</em></div><div class="nm">${esc(pn(g,me))} (вы)${ADMINS[g.u[me]]?' '+DEVB:''}${status(me)?' · '+status(me):''}</div></div>
   <div class="row hand" style="--ov:${ovl}px">${hand}</div>${end}`;
   }
-  $a().innerHTML=`<div class="hd"><b>🌐 Дурак онлайн<small>${g.perev?'переводной':'подкидной'} · ${g.np} игрока · код ${ocode}${g.u.every(x=>x)&&new Set(g.u).size===g.np?' · 🏆 рейтинговая':''}</small></b><span class="hr">${coinBadge()}<button class="mbtn lbb" onclick="openLeaders()" title="Лидеры" aria-label="Таблица лидеров">🏆</button><button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>${body}`;
+  $a().innerHTML=`<div class="hd"><b>🌐 Durak Online<small>${g.perev?'переводной':'подкидной'} · ${g.np} игрока · код ${ocode}${g.u.every(x=>x)&&new Set(g.u).size===g.np?' · 🏆 рейтинговая':''}</small></b><span class="hr">${coinBadge()}<button class="mbtn lbb" onclick="openLeaders()" title="Лидеры" aria-label="Таблица лидеров">🏆</button><button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>${body}`;
 }
 async function oResume(){
   let v;try{v=localStorage.getItem('osess')}catch(e){}
