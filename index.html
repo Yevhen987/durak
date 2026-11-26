@@ -16,6 +16,7 @@ main{max-width:560px;margin:0 auto;padding:10px 12px 16px;display:flex;flex-dire
 .tp i{font-style:normal;font-size:18px;vertical-align:-1px}.tp .rd{color:#ff6b6b}
 .ic{background:#fff2;color:var(--fg);border:0;border-radius:10px;width:38px;height:38px;font-size:18px;cursor:pointer;margin-left:6px}
 .pl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.avc{display:flex;flex-direction:column;align-items:center;gap:6px}.avc .coin{font-size:13px;padding:2px 9px 2px 3px;gap:4px}.avc .coin .kz{width:18px;height:18px}
 .nm{font-size:13px;opacity:.85}
 .av{position:relative;width:44px;height:44px;border-radius:24%;background:#fff2;border:2px solid #fff4;display:flex;align-items:center;justify-content:center;font-size:24px;flex:none}
 .av em{position:absolute;right:-8px;bottom:-4px;background:#f5b301;color:#2b2200;font:700 12px system-ui,sans-serif;border-radius:10px;padding:1px 7px}
@@ -408,12 +409,12 @@ function render(){
   const live=mode!=='end';
   const ov=mode==='end'?`<div class="ov"><div class="box"><div class="big">${msg}</div><button class="btn" onclick="init()">Сыграть ещё</button></div></div>`:'';
   document.getElementById('app').innerHTML=
-   `<div class="hd"><b class="ttl"><img class="logo" src="${JOKER}" alt=""><span>Durak<small>${perev?'переводной':'подкидной'} · ${wins}:${losses}</small></span></b><span class="hr">${coinBadge()}<button class="mbtn lbb" onclick="openShop()" title="Магазин" aria-label="Магазин">🛒</button><button class="mbtn lbb" onclick="openLeaders()" title="Лидеры" aria-label="Таблица лидеров">🏆</button><button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>
+   `<div class="hd"><b class="ttl"><img class="logo" src="${JOKER}" alt=""><span>Durak<small>${perev?'переводной':'подкидной'} · ${wins}:${losses}</small></span></b><span class="hr"><button class="mbtn lbb" onclick="openShop()" title="Магазин" aria-label="Магазин">🛒</button><button class="mbtn lbb" onclick="openLeaders()" title="Лидеры" aria-label="Таблица лидеров">🏆</button><button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>
     <div class="pl"><div class="av"><img src="${BOTAV}" alt="Бот"><em>${B.length}</em></div><div class="nm">Бот</div><div class="row bot">${botRow}</div></div>
     <div class="table">${dk}<div class="tcards">${tb||''}</div></div>
     <div class="pill">${msg}</div>
     <div class="acts">${acts}</div>
-    <div class="pl"><div class="av${frCls(ACC&&ACC.uid)}">${avImg(ACC&&ACC.uid,'🙂')}${frImg(frameOf(ACC&&ACC.uid))}<em>${P.length}</em></div><div class="nm">${esc(pName())}${ACC&&ACC.dev?' '+DEVB:''}${live?' · '+(att==='p'?'атакуете':'отбиваетесь'):''}</div></div>
+    <div class="pl"><div class="avc"><div class="av${frCls(ACC&&ACC.uid)}">${avImg(ACC&&ACC.uid,'🙂')}${frImg(frameOf(ACC&&ACC.uid))}<em>${P.length}</em></div>${coinBadge()}</div><div class="nm">${esc(pName())}${ACC&&ACC.dev?' '+DEVB:''}${live?' · '+(att==='p'?'атакуете':'отбиваетесь'):''}</div></div>
     <div class="row hand" style="--ov:${P.length>1?Math.max(-36,Math.min(-26,(Math.min(innerWidth,560)-24-54)/(P.length-1)-54)):-26}px">${hand}</div>${ov}`;
 }
 try{theme=localStorage.getItem('cards')==='black'?'black':'classic'}catch(e){}
@@ -1055,10 +1056,10 @@ function oRender(){
     body=`<div class="opps">${opps}</div>
   <div class="table">${dk}<div class="tcards">${tb||''}</div></div>
   <div class="pill">${onote||m}</div><div class="acts">${acts}</div>
-  <div class="pl"><div class="av${myCls}${frCls(g.u[me])}">${avImg(g.u[me],EM[me])}${frImg(frameOf(g.u[me]))}<em>${mine.length}</em></div><div class="nm">${esc(pn(g,me))} (вы)${ADMINS[g.u[me]]?' '+DEVB:''}${status(me)?' · '+status(me):''}</div></div>
+  <div class="pl"><div class="avc"><div class="av${myCls}${frCls(g.u[me])}">${avImg(g.u[me],EM[me])}${frImg(frameOf(g.u[me]))}<em>${mine.length}</em></div>${ACC&&ACC.uid===g.u[me]?coinBadge():''}</div><div class="nm">${esc(pn(g,me))} (вы)${ADMINS[g.u[me]]?' '+DEVB:''}${status(me)?' · '+status(me):''}</div></div>
   <div class="row hand" style="--ov:${ovl}px">${hand}</div>${end}`;
   }
-  $a().innerHTML=`<div class="hd"><b>🌐 Durak Online<small>${g.perev?'переводной':'подкидной'} · ${g.np} игрока · код ${ocode}${g.u.every(x=>x)&&new Set(g.u).size===g.np?' · 🏆 рейтинговая':''}</small></b><span class="hr">${coinBadge()}<button class="mbtn lbb" onclick="openShop()" title="Магазин" aria-label="Магазин">🛒</button><button class="mbtn lbb" onclick="openLeaders()" title="Лидеры" aria-label="Таблица лидеров">🏆</button><button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>${body}`;
+  $a().innerHTML=`<div class="hd"><b>🌐 Durak Online<small>${g.perev?'переводной':'подкидной'} · ${g.np} игрока · код ${ocode}${g.u.every(x=>x)&&new Set(g.u).size===g.np?' · 🏆 рейтинговая':''}</small></b><span class="hr"><button class="mbtn lbb" onclick="openShop()" title="Магазин" aria-label="Магазин">🛒</button><button class="mbtn lbb" onclick="openLeaders()" title="Лидеры" aria-label="Таблица лидеров">🏆</button><button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>${body}`;
 }
 async function oResume(){
   let v;try{v=localStorage.getItem('osess')}catch(e){}
