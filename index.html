@@ -107,6 +107,7 @@ button.c.deal,.c.deal{animation:deal .42s cubic-bezier(.2,.8,.3,1) backwards}
 .hr{display:flex;align-items:center;gap:8px}
 .coin{display:inline-flex;align-items:center;gap:6px;background:#0007;border:1px solid #f5c84255;border-radius:20px;padding:4px 12px 4px 5px;font:700 15px system-ui,sans-serif;color:#ffe08a;cursor:pointer}
 .coin .kz{width:24px;height:24px}
+.devb{display:inline-block;background:linear-gradient(90deg,#f5b301,#ff7a00);color:#2b1600;font:800 10px system-ui,sans-serif;letter-spacing:.5px;border-radius:6px;padding:2px 6px;vertical-align:1px;text-shadow:none}
 .hd b small{display:block;font-size:11px;font-weight:400;opacity:.7;letter-spacing:0}
 </style></head>
 <body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -352,7 +353,7 @@ function render(){
     <div class="table">${dk}<div class="tcards">${tb||'<div class="empty">Стол пуст</div>'}</div></div>
     <div class="pill">${msg}</div>
     <div class="acts">${acts}</div>
-    <div class="pl"><div class="av">🙂<em>${P.length}</em></div><div class="nm">${esc(pName())}${live?' · '+(att==='p'?'атакуете':'отбиваетесь'):''}</div></div>
+    <div class="pl"><div class="av">🙂<em>${P.length}</em></div><div class="nm">${esc(pName())}${ACC&&ACC.dev?' '+DEVB:''}${live?' · '+(att==='p'?'атакуете':'отбиваетесь'):''}</div></div>
     <div class="row hand" style="--ov:${P.length>1?Math.max(-36,Math.min(-26,(Math.min(innerWidth,560)-24-54)/(P.length-1)-54)):-26}px">${hand}</div>${ov}`;
 }
 try{theme=localStorage.getItem('cards')==='black'?'black':'classic'}catch(e){}
@@ -373,7 +374,7 @@ function applyBg(){
 applyBg();
 function setBg(){bgi=bgi+1>=BGS.length?-1:bgi+1;applyBg();try{localStorage.setItem('bgn',bgi<0?'off':BGS[bgi][0])}catch(e){}}
 /* ===== ACCOUNT (nick + password + recovery code) ===== */
-let ACC=null,fbAuth=null,accUnsub=null,authReadyRes;
+let ACC=null,fbAuth=null,accUnsub=null,authReadyRes,ADMINS={};
 const authReady=new Promise(r=>authReadyRes=r);
 const enc8=new TextEncoder();
 const b64=a=>btoa(String.fromCharCode(...new Uint8Array(a)));
@@ -402,6 +403,7 @@ async function getAuth(){
   const db=await getDb();
   if(!db||!window.firebase||!firebase.auth){authReadyRes();return null}
   fbAuth=firebase.auth();
+  firebase.database().ref('admins').on('value',s=>{ADMINS=s.val()||{};if(ACC)ACC.dev=!!ADMINS[ACC.uid];accRefresh()},()=>{});
   fbAuth.onAuthStateChanged(onAuth);
   return fbAuth;
 }
@@ -409,7 +411,7 @@ function onAuth(user){
   if(accUnsub){accUnsub();accUnsub=null}
   if(!user){ACC=null;authReadyRes();accRefresh();return}
   const ref=firebase.database().ref('users/'+user.uid);
-  const h=s=>{const v=s.val()||{};ACC={uid:user.uid,nick:v.nick||'…',coins:+v.coins||0};
+  const h=s=>{const v=s.val()||{};ACC={uid:user.uid,nick:v.nick||'…',coins:+v.coins||0,dev:!!ADMINS[user.uid]};
     if(v.nick){try{localStorage.setItem('oname',v.nick)}catch(e){}}
     authReadyRes();accRefresh()};
   ref.on('value',h,()=>{authReadyRes()});accUnsub=()=>ref.off('value',h);
@@ -419,6 +421,7 @@ function accRefresh(){
   if(document.getElementById('menu'))openMenu();
   const pv=document.getElementById('accov');if(pv&&pv.dataset.view==='profile')openAccount('profile');
 }
+const DEVB='<span class="devb" title="Разработчик игры">🛠 DEV</span>';
 const KZ='<svg class="kz" viewBox="0 0 40 40"><use href="#kz"/></svg>';
 function coinBadge(){return ACC?`<span class="coin" onclick="openAccount('profile')" title="Козыри">${KZ}${ACC.coins}</span>`:''}
 async function accRegister(nick,pw,pw2){
@@ -490,7 +493,7 @@ function openAccount(view){
     <input id="a3" ${IN} type="password" placeholder="Повторите пароль" autocomplete="new-password">
     ${err}<button class="btn" id="ago">Сменить пароль</button>${link('Назад ко входу','login')}`;
   else if(view==='profile'&&ACC)h=`<div class="av" style="margin:0 auto;width:64px;height:64px;font-size:34px">🙂</div>
-    <div class="big">${esc(ACC.nick)}</div>
+    <div class="big">${esc(ACC.nick)}</div>${ACC.dev?'<div><span class="devb" style="font-size:14px;padding:4px 12px">🛠 Разработчик игры</span></div>':''}
     <div class="coin" style="align-self:center;font-size:20px;padding:6px 16px 6px 8px;cursor:default">${KZ.replace('class="kz"','class="kz" style="width:28px;height:28px"')}${ACC.coins} козырей</div>
     <div class="nm">Козыри зарабатываются в игре.</div>
     <button class="btn" style="background:#fff2;color:var(--fg);box-shadow:none" onclick="accLogout()">Выйти из аккаунта</button>`;
@@ -574,9 +577,10 @@ function askName(first){
   <button class="btn" id="nmok">Сохранить</button></div>`;
   document.body.appendChild(d);
   const inp=d.querySelector('#nmi');inp.value=cur;setTimeout(()=>inp.focus(),50);
-  const save=()=>{
+  const save=async()=>{
     const v=inp.value.replace(/\s+/g,' ').trim();
     if(v.length<2){d.querySelector('#nmerr').textContent='Минимум 2 символа.';return}
+    const bad=await guestNickTaken(v.slice(0,12));if(bad){d.querySelector('#nmerr').textContent=bad;return}
     try{localStorage.setItem('oname',v.slice(0,12))}catch(e){}
     d.remove();
     const on=document.getElementById('on');if(on)on.value=v.slice(0,12);
@@ -646,7 +650,7 @@ function norm(r){
     table:arr(r.table).map(t=>{const o={a:cl(t.a),p:+t.p||0};if(t.d)o.d=cl(t.d);return o}),
     att:+r.att||0,def:+r.def||0,take:!!r.take,perev:!!r.perev,limit:+r.limit||6,end:String(r.end||''),ready:!!r.ready,
     j:I.map(i=>!!at(r.j,i)),n:I.map(i=>String(at(r.n,i)||'')),sc:I.map(i=>+at(r.sc,i)||0),
-    pass:I.map(i=>!!at(r.pass,i)),out:I.map(i=>!!at(r.out,i)),ts:+r.ts||0};
+    pass:I.map(i=>!!at(r.pass,i)),out:I.map(i=>!!at(r.out,i)),u:I.map(i=>String(at(r.u,i)||'')),ts:+r.ts||0};
 }
 function nextA(g,i){for(let k=1;k<=g.np;k++){const j=(i+k)%g.np;if(!g.out[j])return j}return i}
 function canAdd(g,i){
@@ -662,7 +666,7 @@ function deal(np,pv){
   let att=0;for(const i of I)if(low(h[i])<low(h[att]))att=i;
   const def=(att+1)%np;
   return {np,deck:d,trump:t,h,table:[],att,def,take:false,perev:!!pv,limit:Math.min(6,h[def].length),end:'',ready:false,
-    j:I.map(()=>false),n:I.map(()=>''),sc:I.map(()=>0),pass:I.map(()=>false),out:I.map(()=>false),ts:Date.now()};
+    j:I.map(()=>false),n:I.map(()=>''),u:I.map(()=>''),sc:I.map(()=>0),pass:I.map(()=>false),out:I.map(()=>false),ts:Date.now()};
 }
 function endR(g,took){
   const cards=g.table.flatMap(t=>t.d?[t.a,t.d]:[t.a]);
@@ -725,6 +729,13 @@ function normCode(t){
   const map={'А':'A','В':'B','Е':'E','К':'K','М':'M','Н':'H','О':'O','Р':'P','С':'C','Т':'T','Х':'X','У':'Y'};
   return String(t||'').toUpperCase().replace(/[А-ЯЁ]/g,c=>map[c]||c).replace(/[^A-Z0-9]/g,'').slice(0,4);
 }
+async function guestNickTaken(n){
+  if(ACC)return '';
+  try{const db=await getDb();if(!db||!window.firebase)return '';
+    if((await firebase.database().ref('accounts/'+nickId(n)).get()).exists())return 'Ник «'+n+'» принадлежит зарегистрированному игроку. Войдите в аккаунт или выберите другой ник.';
+  }catch(e){}
+  return '';
+}
 function myName(){
   const el=document.getElementById('on');let n=el?el.value.trim():'';
   if(!n){try{n=localStorage.getItem('oname')||''}catch(e){}}
@@ -751,7 +762,8 @@ async function oCreate(){
     let code,s;
     do{code=String(1000+Math.random()*9000|0);s=await odb.doc('rooms/'+code).get()}while(s.exists&&!s.data().end&&Date.now()-(s.data().ts||0)<864e5);
     me=0;oref=odb.doc('rooms/'+code);
-    const g=deal(onp,perev);g.j[0]=true;g.n[0]=myName();
+    const nmc=myName(),bad=await guestNickTaken(nmc);if(bad)return document.getElementById('om').textContent=bad;
+    const g=deal(onp,perev);g.j[0]=true;g.n[0]=nmc;g.u[0]=ACC?ACC.uid:'';
     await oref.set(clean(g));oWatch(code);
   }catch(e){document.getElementById('om').textContent='Не удалось создать игру. Проверьте интернет.'}
 }
@@ -762,13 +774,13 @@ async function oJoin(){
   try{
     const r=odb.doc('rooms/'+code),s=await r.get();
     if(!s.exists)return m.textContent='Игра с таким кодом не найдена.';
-    const nm=myName();let slot=-1;
+    const nm=myName(),bad=await guestNickTaken(nm);if(bad)return m.textContent=bad;let slot=-1;const myU=ACC?ACC.uid:'';
     await txDoc(r,raw=>{
       if(!raw)return raw;
       const g=norm(raw);slot=-1;
       if(g.ready)return;
       slot=g.j.findIndex(x=>!x);if(slot<0)return;
-      g.j[slot]=true;g.n[slot]=nm;if(g.j.every(x=>x)){g.ready=true;g.ts=Date.now()}
+      g.j[slot]=true;g.n[slot]=nm;g.u[slot]=myU;if(g.j.every(x=>x)){g.ready=true;g.ts=Date.now()}
       return clean(g);
     });
     if(slot<0)return m.textContent='В этой игре уже нет свободных мест.';
@@ -792,7 +804,7 @@ async function oAgain(){
   if(!oref)return;
   try{await txDoc(oref,raw=>{
     if(!raw)return raw;const g=norm(raw);if(!g.end)return;
-    const ng=deal(g.np,g.perev);ng.j=g.j;ng.n=g.n;ng.sc=g.sc;ng.ready=true;return clean(ng);
+    const ng=deal(g.np,g.perev);ng.j=g.j;ng.n=g.n;ng.u=g.u;ng.sc=g.sc;ng.ready=true;return clean(ng);
   })}catch(e){oSay('Не удалось начать новую игру.')}
 }
 function oLeave(){oHandSeen.clear();oOppSeen={};oShown.clear();if(ounsub){ounsub();ounsub=null}G=null;try{localStorage.removeItem('osess')}catch(e){}init()}
@@ -815,7 +827,7 @@ function oRender(){
     const cnt=g.ready?g.h[i].length:0,show=Math.min(cnt,8),prev=Math.min(oOppSeen[i]??0,show);oOppSeen[i]=show;
     const backs=Array.from({length:show},(_,k)=>`<div class="c b mini${k>=prev?' dealb':''}"${k>=prev?` style="animation-delay:${(k-prev)*70}ms"`:''}></div>`).join('');
     const cls=g.ready&&!g.end&&!g.out[i]?(i===g.def?' def':i===g.att?' att':''):'';
-    return `<div class="opp${cls}"><div class="av">${EM[i]}<em>${g.ready?cnt:'–'}</em></div><div class="nm">${g.j[i]?esc(pn(g,i)):'…'}<br><small>${status(i)}</small></div><div class="minis">${backs}</div></div>`;
+    return `<div class="opp${cls}"><div class="av">${EM[i]}<em>${g.ready?cnt:'–'}</em></div><div class="nm">${g.j[i]?esc(pn(g,i)):'…'}${ADMINS[g.u[i]]?' '+DEVB:''}<br><small>${status(i)}</small></div><div class="minis">${backs}</div></div>`;
   }).join('');
   let body;
   if(!g.ready){
@@ -848,7 +860,7 @@ function oRender(){
     body=`<div class="opps">${opps}</div>
   <div class="table">${dk}<div class="tcards">${tb||'<div class="empty">Стол пуст</div>'}</div></div>
   <div class="pill">${onote||m}</div><div class="acts">${acts}</div>
-  <div class="pl"><div class="av${myCls}">${EM[me]}<em>${mine.length}</em></div><div class="nm">${esc(pn(g,me))} (вы)${status(me)?' · '+status(me):''}</div></div>
+  <div class="pl"><div class="av${myCls}">${EM[me]}<em>${mine.length}</em></div><div class="nm">${esc(pn(g,me))} (вы)${ADMINS[g.u[me]]?' '+DEVB:''}${status(me)?' · '+status(me):''}</div></div>
   <div class="row hand" style="--ov:${ovl}px">${hand}</div>${end}`;
   }
   $a().innerHTML=`<div class="hd"><b>🌐 Дурак онлайн<small>${g.perev?'переводной':'подкидной'} · ${g.np} игрока · код ${ocode}</small></b><span class="hr">${coinBadge()}<button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>${body}`;
