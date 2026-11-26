@@ -370,6 +370,10 @@ const arr=x=>Array.isArray(x)?x:x?Object.values(x):[];
 const oV=c=>c.r+(c.s===G.trump.s?100:0);
 const oB=(g,a,d)=>d.s===a.s?d.r>a.r:d.s===g.trump.s;
 const oSay=m=>{onote=m;oRender()};
+function normCode(t){
+  const map={'А':'A','В':'B','Е':'E','К':'K','М':'M','Н':'H','О':'O','Р':'P','С':'C','Т':'T','Х':'X','У':'Y'};
+  return String(t||'').toUpperCase().replace(/[А-ЯЁ]/g,c=>map[c]||c).replace(/[^A-Z0-9]/g,'').slice(0,4);
+}
 function myName(){
   const el=document.getElementById('on');let n=el?el.value.trim():'';
   if(!n){try{n=localStorage.getItem('oname')||''}catch(e){}}
@@ -395,7 +399,7 @@ function oNew(){
 async function lobby(){
   gen++;if(ounsub){ounsub();ounsub=null}G=null;
   $a().innerHTML=`<div class="hd"><b>🌐 Онлайн<small>Дурак на двоих</small></b><button class="ic" onclick="init()" title="Назад">✕</button></div>
-  <div class="box" style="margin-top:24px"><div class="nm">Ваше имя:</div><input id="on" maxlength="12" autocomplete="off" placeholder="Игрок" style="font:700 20px system-ui,sans-serif;text-align:center;padding:8px;border-radius:10px;border:0;width:200px;margin:0 auto"><button class="btn" onclick="oCreate()">Создать игру</button><div class="nm">или введите код друга:</div><input id="oc" maxlength="4" autocomplete="off" style="font:700 26px system-ui,sans-serif;text-align:center;text-transform:uppercase;padding:8px;border-radius:10px;border:0;width:150px;margin:0 auto"><button class="btn" onclick="oJoin()">Войти</button><div id="om" class="nm">Подключение…</div></div>`;
+  <div class="box" style="margin-top:24px"><div class="nm">Ваше имя:</div><input id="on" maxlength="12" autocomplete="off" placeholder="Игрок" style="font:700 20px system-ui,sans-serif;text-align:center;padding:8px;border-radius:10px;border:0;width:200px;margin:0 auto"><button class="btn" onclick="oCreate()">Создать игру</button><div class="nm">или введите код друга:</div><input id="oc" maxlength="4" inputmode="numeric" placeholder="0000" autocomplete="off" style="font:700 26px system-ui,sans-serif;text-align:center;text-transform:uppercase;padding:8px;border-radius:10px;border:0;width:150px;margin:0 auto"><button class="btn" onclick="oJoin()">Войти</button><div id="om" class="nm">Подключение…</div></div>`;
   try{const n=localStorage.getItem('oname');if(n)document.getElementById('on').value=n}catch(e){}
   odb=odb||await getDb();
   const m=document.getElementById('om');
@@ -405,14 +409,15 @@ async function oCreate(){
   if(!odb)return;
   try{
     let code,s;
-    do{code=Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.random()*24|0]).join('');s=await odb.doc('rooms/'+code).get()}while(s.exists&&!s.data().end&&Date.now()-(s.data().ts||0)<864e5);
+    do{code=String(1000+Math.random()*9000|0);s=await odb.doc('rooms/'+code).get()}while(s.exists&&!s.data().end&&Date.now()-(s.data().ts||0)<864e5);
     me=0;oref=odb.doc('rooms/'+code);
     const g=oNew();g.ready=false;g.n=[myName(),''];g.sc=[0,0];await oref.set(g);oWatch(code);
   }catch(e){document.getElementById('om').textContent='Не удалось создать игру. Проверьте интернет.'}
 }
 async function oJoin(){
-  const code=document.getElementById('oc').value.trim().toUpperCase(),m=document.getElementById('om');
-  if(!odb||code.length!==4)return;
+  const code=normCode(document.getElementById('oc').value),m=document.getElementById('om');
+  if(!odb)return m.textContent='Нет связи с сервером игры. Проверьте интернет.';
+  if(code.length!==4)return m.textContent='Код должен состоять из 4 цифр.';
   try{
     const r=odb.doc('rooms/'+code),s=await r.get();
     if(!s.exists)return m.textContent='Игра с таким кодом не найдена.';
@@ -421,7 +426,7 @@ async function oJoin(){
   }catch(e){m.textContent='Не удалось войти в игру. Проверьте интернет.'}
 }
 function oWatch(code){
-  ocode=code.replace(/[^A-Z]/g,'');try{localStorage.setItem('osess',ocode+me)}catch(e){}if(ounsub)ounsub();
+  ocode=normCode(code);try{localStorage.setItem('osess',ocode+me)}catch(e){}if(ounsub)ounsub();
   ounsub=oref.onSnapshot(s=>{
     if(!s.exists)return;const g=s.data();onote='';
     const h=arr(g.h);
@@ -489,7 +494,7 @@ function oRender(){
 
 async function oResume(){
   let v;try{v=localStorage.getItem('osess')}catch(e){}
-  if(!v||!/^[A-Z]{4}[01]$/.test(v))return;
+  if(!v||!/^[A-Z0-9]{4}[01]$/.test(v))return;
   try{
     odb=odb||await getDb();if(!odb)return;
     const r=odb.doc('rooms/'+v.slice(0,4)),s=await r.get();
