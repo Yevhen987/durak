@@ -362,7 +362,7 @@ function render(){
   document.getElementById('app').innerHTML=
    `<div class="hd"><b>🃏 Durak<small>${perev?'переводной':'подкидной'} · ${wins}:${losses}</small></b><span class="hr">${coinBadge()}<button class="mbtn lbb" onclick="openLeaders()" title="Лидеры" aria-label="Таблица лидеров">🏆</button><button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>
     <div class="pl"><div class="av"><img src="${BOTAV}" alt="Бот"><em>${B.length}</em></div><div class="nm">Бот${live?' · '+(att==='b'?'атакует':'отбивается'):''}</div><div class="row bot">${botRow}</div></div>
-    <div class="table">${dk}<div class="tcards">${tb||'<div class="empty">Стол пуст</div>'}</div></div>
+    <div class="table">${dk}<div class="tcards">${tb||''}</div></div>
     <div class="pill">${msg}</div>
     <div class="acts">${acts}</div>
     <div class="pl"><div class="av">${avImg(ACC&&ACC.uid,'🙂')}<em>${P.length}</em></div><div class="nm">${esc(pName())}${ACC&&ACC.dev?' '+DEVB:''}${live?' · '+(att==='p'?'атакуете':'отбиваетесь'):''}</div></div>
@@ -947,7 +947,7 @@ function oRender(){
     const end=g.end?`<div class="ov"><div class="box"><div class="big">${endTxt}</div><div class="nm" style="font-size:14px">Сколько раз был дураком:<br>${score}</div><button class="btn" onclick="oAgain()">Сыграть ещё</button></div></div>`:'';
     const myCls=!g.end&&!g.out[me]?(me===g.def?' def':me===g.att?' att':''):'';
     body=`<div class="opps">${opps}</div>
-  <div class="table">${dk}<div class="tcards">${tb||'<div class="empty">Стол пуст</div>'}</div></div>
+  <div class="table">${dk}<div class="tcards">${tb||''}</div></div>
   <div class="pill">${onote||m}</div><div class="acts">${acts}</div>
   <div class="pl"><div class="av${myCls}">${avImg(g.u[me],EM[me])}<em>${mine.length}</em></div><div class="nm">${esc(pn(g,me))} (вы)${ADMINS[g.u[me]]?' '+DEVB:''}${status(me)?' · '+status(me):''}</div></div>
   <div class="row hand" style="--ov:${ovl}px">${hand}</div>${end}`;
