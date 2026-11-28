@@ -116,6 +116,12 @@ button.c.deal,.c.deal{animation:deal .42s cubic-bezier(.2,.8,.3,1) backwards}
 .frRow{display:flex;align-items:center;gap:6px;padding:8px 4px;border-top:1px solid #fff1;font-size:15px}.frN{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .frSt{display:inline-flex;align-items:center;gap:6px;font-size:12px;opacity:.9;white-space:nowrap}.frSt i{width:12px;height:12px;border-radius:50%;display:inline-block}
 .frSt.on i{background:#35d07f;box-shadow:0 0 6px #35d07f}.frSt.off i{background:#ff3b30;box-shadow:0 0 5px #ff3b3099}
+.frH{font-size:12px;opacity:.75;text-align:left;margin-top:4px}.frReq{background:#f5b3011a;border-radius:10px}.frOk,.frInv{width:auto;padding:6px 10px;font-size:12px;white-space:nowrap}
+.frBtn{position:relative}.frBdg{position:absolute;right:-5px;top:-5px;background:#ff3b30;color:#fff;font:800 11px system-ui,sans-serif;min-width:18px;height:18px;line-height:18px;border-radius:9px;padding:0 4px;box-sizing:border-box}
+@media(max-width:420px){.frSt em{display:none}}
+.frToast{color:#fff;font-size:15px;max-width:90vw;text-align:center}
+.ginv{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:10px;background:#1d2a22f2;border:2px solid #35d07f;border-radius:16px;padding:10px 12px;box-shadow:0 8px 24px #000a;animation:pop .3s;max-width:calc(100vw - 24px);box-sizing:border-box}
+.ginvT{font-size:14px;flex:1;min-width:0}.ginv .sbtn{width:auto;padding:8px 14px}
 .frDel{border:0;background:#fff1;color:#fffa;border-radius:8px;width:28px;height:28px;cursor:pointer;margin-left:4px}.box.lb.fr{width:min(400px,calc(100vw - 24px))}
 .box.lb{position:relative;min-width:300px;max-width:calc(100vw - 32px);max-height:calc(100vh - 60px);overflow:auto;box-sizing:border-box;gap:12px;padding:22px 16px}
 .lbt{border-collapse:collapse;width:100%;font-size:14px}
@@ -415,7 +421,7 @@ function render(){
   const live=mode!=='end';
   const ov=mode==='end'?`<div class="ov"><div class="box"><div class="big">${msg}</div><button class="btn" onclick="init()">Сыграть ещё</button></div></div>`:'';
   document.getElementById('app').innerHTML=
-   `<div class="hd"><b class="ttl"><img class="logo" src="${JOKER}" alt=""><span>Durak<small>${perev?'переводной':'подкидной'} · ${wins}:${losses}</small></span></b><span class="hr"><button class="mbtn lbb" onclick="openShop()" title="Магазин" aria-label="Магазин"><svg class="cart" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 3h2.6l2.3 11.2a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.5L21.4 7H6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9.5" cy="20" r="1.7" fill="currentColor"/><circle cx="17.5" cy="20" r="1.7" fill="currentColor"/></svg></button><button class="mbtn lbb" onclick="openFriends()" title="Друзья" aria-label="Друзья">👥</button><button class="mbtn lbb" onclick="openLeaders()" title="Лидеры" aria-label="Таблица лидеров">🏆</button><button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>
+   `<div class="hd"><b class="ttl"><img class="logo" src="${JOKER}" alt=""><span>Durak<small>${perev?'переводной':'подкидной'} · ${wins}:${losses}</small></span></b><span class="hr"><button class="mbtn lbb" onclick="openShop()" title="Магазин" aria-label="Магазин"><svg class="cart" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 3h2.6l2.3 11.2a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.5L21.4 7H6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9.5" cy="20" r="1.7" fill="currentColor"/><circle cx="17.5" cy="20" r="1.7" fill="currentColor"/></svg></button><button class="mbtn lbb frBtn" onclick="openFriends()" title="Друзья" aria-label="Друзья">👥${frBadge()}</button><button class="mbtn lbb" onclick="openLeaders()" title="Лидеры" aria-label="Таблица лидеров">🏆</button><button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>
     <div class="pl"><div class="av"><img src="${BOTAV}" alt="Бот"><em>${B.length}</em></div><div class="nm">Бот</div><div class="row bot">${botRow}</div></div>
     <div class="table">${dk}<div class="tcards">${tb||''}</div></div>
     <div class="pill">${msg}</div>
@@ -476,10 +482,13 @@ async function getAuth(){
 }
 function onAuth(user){
   if(accUnsub){accUnsub();accUnsub=null}
-  if(!user){ACC=null;presenceStop();FR={};frRender();authReadyRes();accRefresh();return}
+  if(!user){ACC=null;presenceStop();FR={};FRQ={};frRender();authReadyRes();accRefresh();return}
   presenceStart(user.uid);
   const fref=firebase.database().ref('friends/'+user.uid),fh=s=>{FR=s.val()||{};frRender()};
   fref.on('value',fh,()=>{});
+  const qref=firebase.database().ref('freq/'+user.uid),qh=s=>{FRQ=s.val()||{};frRender()};
+  qref.on('value',qh,()=>{});
+  const iref=firebase.database().ref('ginv/'+user.uid);iref.on('value',ginvOnValue,()=>{});
   const ref=firebase.database().ref('users/'+user.uid);
   const h=s=>{const v=s.val()||{};ACC={uid:user.uid,nick:v.nick||'…',coins:+v.coins||0,dev:!!ADMINS[user.uid],inv:v.inv||{},st:(ACC&&ACC.uid===user.uid&&ACC.st)||{g:0,w:0}};
     if(v.nick){try{localStorage.setItem('oname',v.nick)}catch(e){}}
@@ -487,7 +496,7 @@ function onAuth(user){
   ref.on('value',h,()=>{authReadyRes()});
   const sref=firebase.database().ref('stats/'+user.uid),sh=s=>{const v=s.val()||{};if(ACC&&ACC.uid===user.uid){ACC.st={g:+v.g||0,w:+v.w||0};accRefresh()}};
   sref.on('value',sh,()=>{});
-  accUnsub=()=>{ref.off('value',h);sref.off('value',sh);fref.off('value',fh)};
+  accUnsub=()=>{ref.off('value',h);sref.off('value',sh);fref.off('value',fh);qref.off('value',qh);iref.off('value',ginvOnValue);document.querySelectorAll('.ginv').forEach(e=>e.remove())};
 }
 function accRefresh(){
   try{applySkin()}catch(e){}
@@ -762,9 +771,9 @@ function openShop(){
     <div class="nm" style="font-size:12px">${ACC&&ACC.dev?'Аккаунт разработчика: все товары доступны для проверки.':'Простые рамки — за козыри (+'+WIN_KZ+' за победу над живыми игроками). Рамки с картинками — за реальные деньги, скоро.'}${!ACC?' Для покупок нужен аккаунт.':''}</div></div>`;
   const g=d.querySelector('.shopgrid');if(g&&keep)g.scrollTop=keep;
 }
-/* ===== FRIENDS + ONLINE STATUS ===== */
-let presRef=null,presCon=null,presCb=null,FR={};
-const PRES={},PRW={},FNICK={};
+/* ===== FRIENDS + REQUESTS + INVITES + ONLINE STATUS ===== */
+let presRef=null,presCon=null,presCb=null,FR={},FRQ={};
+const PRES={},PRW={},FNICK={},GINV_SEEN={};
 function presenceStart(uid){
   presenceStop();if(!window.firebase)return;
   const db=firebase.database();presRef=db.ref('presence/'+uid);presCon=db.ref('.info/connected');
@@ -784,6 +793,8 @@ async function frNick(uid){
   try{FNICK[uid]=(await firebase.database().ref('users/'+uid+'/nick').get()).val()||'?'}catch(e){FNICK[uid]='?'}
   frRender();
 }
+const frBadge=()=>{const n=Object.keys(FRQ).length;return n?`<b class="frBdg">${n}</b>`:''};
+function frBtnUpd(){document.querySelectorAll('.frBtn').forEach(b=>{b.innerHTML='👥'+frBadge()})}
 function openFriends(){
   closeMenu();closeAccount();
   const d=document.createElement('div');d.className='ov';d.id='accov';d.dataset.view='friends';
@@ -791,48 +802,95 @@ function openFriends(){
   d.innerHTML=`<div class="box lb fr"><button class="ic" style="position:absolute;right:10px;top:10px;margin:0" onclick="closeAccount()" aria-label="Закрыть">✕</button>
     <div class="big">👥 Друзья</div>
     ${ACC?`<div class="frAdd"><input id="frIn" placeholder="Ник друга" maxlength="12" autocomplete="off" onkeydown="if(event.key==='Enter')frAdd()"><button class="sbtn" onclick="frAdd()">Добавить</button></div><div class="nm frMsg" id="frMsg"></div>`:''}
-    <div id="frL"></div></div>`;
+    <div id="frQ"></div><div id="frL"></div></div>`;
   document.body.appendChild(d);frRender();
 }
 function frRender(){
+  frBtnUpd();
   const d=document.getElementById('accov');if(!d||d.dataset.view!=='friends')return;
-  const L=d.querySelector('#frL');if(!L)return;
-  if(!ACC){L.innerHTML=`<div class="nm" style="font-size:15px">Войдите в аккаунт, чтобы добавлять друзей.</div><button class="btn" onclick="openAccount()">Аккаунт</button>`;return}
+  const L=d.querySelector('#frL'),Q=d.querySelector('#frQ');if(!L)return;
+  if(!ACC){Q.innerHTML='';L.innerHTML=`<div class="nm" style="font-size:15px">Войдите в аккаунт, чтобы добавлять друзей.</div><button class="btn" onclick="openAccount()">Аккаунт</button>`;return}
+  const qs=Object.keys(FRQ);qs.forEach(u=>{if(!(u in FNICK))frNick(u)});
+  Q.innerHTML=qs.length?`<div class="nm frH">Заявки в друзья: ${qs.length}</div><div class="frList">${qs.map(u=>`<div class="frRow frReq">
+    <span class="lbav">${avImg(u,'🙂')}</span><span class="frN">${esc(FNICK[u]||'…')}</span>
+    <button class="sbtn frOk" onclick="frAccept('${u}')">Принять</button><button class="frDel" onclick="frDecline('${u}')" title="Отклонить" aria-label="Отклонить">✕</button></div>`).join('')}</div>`:'';
   const ids=Object.keys(FR);
-  if(!ids.length){L.innerHTML=`<div class="nm" style="font-size:14px;opacity:.8">Пока нет друзей. Введите ник игрока и нажмите «Добавить».</div>`;return}
+  if(!ids.length){L.innerHTML=`<div class="nm" style="font-size:14px;opacity:.8">Пока нет друзей. Введите ник игрока и нажмите «Добавить» — ему придёт заявка.</div>`;return}
   ids.forEach(u=>{presWatch(u);if(!(u in FNICK))frNick(u)});
   ids.sort((a,b)=>(PRES[b]?1:0)-(PRES[a]?1:0)||String(FNICK[a]||'').localeCompare(String(FNICK[b]||'')));
   const on=ids.filter(u=>PRES[u]).length;
-  L.innerHTML=`<div class="nm" style="font-size:12px;opacity:.7;text-align:left">Онлайн: ${on} из ${ids.length}</div><div class="frList">${ids.map(u=>`<div class="frRow">
+  L.innerHTML=`<div class="nm frH">Онлайн: ${on} из ${ids.length}</div><div class="frList">${ids.map(u=>`<div class="frRow">
     <span class="lbav">${avImg(u,'🙂')}</span><span class="frN">${esc(FNICK[u]||'…')}${ADMINS[u]?' '+DEVB:''}</span>
-    <span class="frSt ${PRES[u]?'on':'off'}"><i></i>${PRES[u]?'онлайн':'не в сети'}</span>
+    ${PRES[u]?`<button class="sbtn frInv" onclick="frInvite('${u}')" title="Позвать в игру">🎮 Позвать</button>`:''}
+    <span class="frSt ${PRES[u]?'on':'off'}" title="${PRES[u]?'онлайн':'не в сети'}"><i></i><em>${PRES[u]?'онлайн':'не в сети'}</em></span>
     <button class="frDel" onclick="frDel('${u}')" title="Удалить из друзей" aria-label="Удалить">✕</button></div>`).join('')}</div>`;
 }
+function frSay(t,ok){const m=document.getElementById('frMsg');if(m){m.textContent=t;m.style.color=ok?'#35d07f':'#ff8a80'}}
 async function frAdd(){
-  const inp=document.getElementById('frIn'),msg=document.getElementById('frMsg');if(!inp||!ACC)return;
-  const say=(t,ok)=>{if(msg){msg.textContent=t;msg.style.color=ok?'#35d07f':'#ff8a80'}};
-  const nick=inp.value.trim();if(!nick)return say('Введите ник.');
-  if(Object.keys(FR).length>=50)return say('Максимум 50 друзей.');
+  const inp=document.getElementById('frIn');if(!inp||!ACC)return;
+  const nick=inp.value.trim();if(!nick)return frSay('Введите ник.');
+  if(Object.keys(FR).length>=50)return frSay('Максимум 50 друзей.');
   try{
     const a=(await firebase.database().ref('accounts/'+nickId(nick)).get()).val();
     const uid=a&&a.uid;
-    if(!uid)return say('Игрок «'+nick+'» не найден.');
-    if(uid===ACC.uid)return say('Это ваш ник 🙂');
-    if(FR[uid])return say('Уже в друзьях.');
-    await firebase.database().ref('friends/'+ACC.uid+'/'+uid).set(true);
-    inp.value='';say('Добавлен в друзья!',1);
-  }catch(e){say('Не удалось добавить. Проверьте интернет.')}
+    if(!uid)return frSay('Игрок «'+nick+'» не найден.');
+    if(uid===ACC.uid)return frSay('Это ваш ник 🙂');
+    if(FR[uid])return frSay('Уже в друзьях.');
+    if(FRQ[uid]){await frAccept(uid);inp.value='';return frSay('Вы теперь друзья!',1)}
+    await firebase.database().ref('freq/'+uid+'/'+ACC.uid).set(true);
+    inp.value='';frSay('Заявка отправлена. Друг появится в списке, когда примет её.',1);
+  }catch(e){frSay('Не удалось отправить заявку. Проверьте интернет.')}
 }
+async function frAccept(uid){
+  if(!ACC)return;
+  try{await firebase.database().ref().update({['friends/'+ACC.uid+'/'+uid]:true,['friends/'+uid+'/'+ACC.uid]:true,['freq/'+ACC.uid+'/'+uid]:null})}
+  catch(e){frSay('Не удалось принять заявку. Проверьте интернет.')}
+}
+async function frDecline(uid){if(ACC)try{await firebase.database().ref('freq/'+ACC.uid+'/'+uid).remove()}catch(e){}}
 async function frDel(uid){
   if(!ACC||!window.confirm('Удалить '+(FNICK[uid]||'игрока')+' из друзей?'))return;
-  try{await firebase.database().ref('friends/'+ACC.uid+'/'+uid).remove()}catch(e){}
+  try{await firebase.database().ref().update({['friends/'+ACC.uid+'/'+uid]:null,['friends/'+uid+'/'+ACC.uid]:null})}
+  catch(e){try{await firebase.database().ref('friends/'+ACC.uid+'/'+uid).remove()}catch(e2){}}
+}
+function frToast(t){const e=document.createElement('div');e.className='kztoast frToast';e.textContent=t;document.body.appendChild(e);setTimeout(()=>e.remove(),3000)}
+async function frInvite(uid){
+  if(!ACC)return;closeAccount();
+  const hosting=G&&!G.ready&&!G.end&&G.u[me]===ACC.uid&&ocode;
+  if(!hosting){
+    if(G&&!G.end&&!window.confirm('Выйти из текущей игры и позвать друга в новую?'))return;
+    onp=2;ocode='';await lobby();await oCreate();
+  }
+  if(!ocode)return frToast('Не удалось создать игру.');
+  try{
+    await firebase.database().ref('ginv/'+uid+'/'+ACC.uid).set({c:ocode,n:ACC.nick,t:firebase.database.ServerValue.TIMESTAMP});
+    frToast('Приглашение отправлено: '+(FNICK[uid]||'друг'));
+  }catch(e){frToast('Не удалось пригласить. Друг должен тоже добавить вас в друзья.')}
+}
+function ginvShow(from,v){
+  if(document.getElementById('ginv_'+from))return;
+  const d=document.createElement('div');d.className='ginv';d.id='ginv_'+from;
+  d.innerHTML=`<span class="lbav">${avImg(from,'🙂')}</span><div class="ginvT"><b>${esc(v.n||'Друг')}</b> зовёт вас в игру</div>
+    <button class="sbtn" onclick="ginvAccept('${from}','${esc(String(v.c||''))}')">Играть</button><button class="frDel" onclick="ginvDecline('${from}')" aria-label="Отклонить">✕</button>`;
+  document.body.appendChild(d);snd&&snd('card');
+}
+function ginvHide(from){document.getElementById('ginv_'+from)?.remove()}
+async function ginvDecline(from){ginvHide(from);if(ACC)try{await firebase.database().ref('ginv/'+ACC.uid+'/'+from).remove()}catch(e){}}
+async function ginvAccept(from,code){
+  await ginvDecline(from);
+  if(G&&!G.end&&!window.confirm('Выйти из текущей игры и перейти к другу?'))return;
+  await lobby();const c=document.getElementById('oc');if(c){c.value=code;await oJoin()}
+}
+function ginvOnValue(s){
+  const v=s.val()||{},now=Date.now();
+  document.querySelectorAll('.ginv').forEach(e=>{if(!v[e.id.slice(5)])e.remove()});
+  Object.keys(v).forEach(from=>{const x=v[from]||{};if(now-(+x.t||0)>3*60e3)return;ginvShow(from,x)});
 }
 /* ===== MENU ===== */
 const TCN={green:'зелёный',blue:'синий',red:'красный',purple:'фиолетовый',gray:'графит'};
 function menuItems(){
   const common=[
     ['👤','Аккаунт',ACC?ACC.nick:'гость','openAccount()',1],
-    ['👥','Друзья',ACC?Object.keys(FR).filter(u=>PRES[u]).length+' онлайн':'нужен аккаунт','openFriends()',1],
+    ['👥','Друзья',ACC?(Object.keys(FRQ).length?'заявок: '+Object.keys(FRQ).length:Object.keys(FR).filter(u=>PRES[u]).length+' онлайн'):'нужен аккаунт','openFriends()',1],
     ['🏆','Лидеры','по победам','openLeaders()',1],
     ['🎨','Цвет стола',TCN[TC[tcol]],'setTable()',0],
     ['🖼️','Фон',bgi<0?'без фона':BGS[bgi][1],'setBg()',0],
@@ -1159,7 +1217,7 @@ function oRender(){
   <div class="pl"><div class="avc"><div class="av${myCls}${frCls(g.u[me])}">${avImg(g.u[me],EM[me])}${frImg(frameOf(g.u[me]))}<em>${mine.length}</em></div>${ACC&&ACC.uid===g.u[me]?coinBadge():''}</div><div class="nm">${esc(pn(g,me))} (вы)${ADMINS[g.u[me]]?' '+DEVB:''}${status(me)?' · '+status(me):''}</div></div>
   <div class="row hand" style="--ov:${ovl}px">${hand}</div>${end}`;
   }
-  $a().innerHTML=`<div class="hd"><b>🌐 Durak Online<small>${g.perev?'переводной':'подкидной'} · ${g.np} игрока · код ${ocode}${g.u.every(x=>x)&&new Set(g.u).size===g.np?' · 🏆 рейтинговая':''}</small></b><span class="hr"><button class="mbtn lbb" onclick="openShop()" title="Магазин" aria-label="Магазин"><svg class="cart" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 3h2.6l2.3 11.2a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.5L21.4 7H6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9.5" cy="20" r="1.7" fill="currentColor"/><circle cx="17.5" cy="20" r="1.7" fill="currentColor"/></svg></button><button class="mbtn lbb" onclick="openFriends()" title="Друзья" aria-label="Друзья">👥</button><button class="mbtn lbb" onclick="openLeaders()" title="Лидеры" aria-label="Таблица лидеров">🏆</button><button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>${body}`;
+  $a().innerHTML=`<div class="hd"><b>🌐 Durak Online<small>${g.perev?'переводной':'подкидной'} · ${g.np} игрока · код ${ocode}${g.u.every(x=>x)&&new Set(g.u).size===g.np?' · 🏆 рейтинговая':''}</small></b><span class="hr"><button class="mbtn lbb" onclick="openShop()" title="Магазин" aria-label="Магазин"><svg class="cart" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 3h2.6l2.3 11.2a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.5L21.4 7H6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9.5" cy="20" r="1.7" fill="currentColor"/><circle cx="17.5" cy="20" r="1.7" fill="currentColor"/></svg></button><button class="mbtn lbb frBtn" onclick="openFriends()" title="Друзья" aria-label="Друзья">👥${frBadge()}</button><button class="mbtn lbb" onclick="openLeaders()" title="Лидеры" aria-label="Таблица лидеров">🏆</button><button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>${body}`;
 }
 async function oResume(){
   let v;try{v=localStorage.getItem('osess')}catch(e){}
