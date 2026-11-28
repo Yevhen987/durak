@@ -557,7 +557,8 @@ async function avUpload(file){
 async function avRemove(){if(ACC)try{await firebase.database().ref('avatars/'+ACC.uid).remove()}catch(e){}}
 const DEVB='<span class="devb" title="Разработчик игры">🛠 DEV</span>';
 const KZ='<svg class="kz" viewBox="0 0 40 40"><use href="#kz"/></svg>';
-function coinBadge(){return ACC?`<span class="coin" onclick="openAccount('profile')" title="Козыри">${KZ}${ACC.coins}</span>`:''}
+function fmtBal(n){n=Math.floor(+n||0);const f=(x,d,u)=>{const v=Math.floor(x/d*10)/10;return String(v).replace('.',',')+u};return n<1000?String(n):n<1e6?f(n,1e3,'к'):f(n,1e6,'м')}
+function coinBadge(){return ACC?`<span class="coin" onclick="openAccount('profile')" title="Козыри: ${ACC.coins}">${KZ}${fmtBal(ACC.coins)}</span>`:''}
 async function accRegister(nick,pw,pw2){
   nick=nick.trim();
   if(!/^[A-Za-zА-Яа-яЁё0-9_-]{3,12}$/.test(nick))return {err:'Ник: от 3 до 12 символов — буквы, цифры, _ или -.'};
@@ -631,7 +632,7 @@ function openAccount(view){
     <div style="display:flex;gap:14px;justify-content:center">${link('Сменить фото','#avf')}${AVC[ACC.uid]?`<button onclick="avRemove()" style="background:none;border:0;color:#ffb3b3;font:600 14px system-ui,sans-serif;cursor:pointer;text-decoration:underline">Удалить фото</button>`:''}</div>
     <div id="averr" class="nm" style="color:#ffb3b3;min-height:0"></div>
     <div class="big">${esc(ACC.nick)}</div>${ACC.dev?'<div><span class="devb" style="font-size:14px;padding:4px 12px">🛠 Разработчик игры</span></div>':''}
-    <div class="coin" style="align-self:center;font-size:20px;padding:6px 16px 6px 8px;cursor:default">${KZ.replace('class="kz"','class="kz" style="width:28px;height:28px"')}${ACC.coins} козырей</div>
+    <div class="coin" style="align-self:center;font-size:20px;padding:6px 16px 6px 8px;cursor:default">${KZ.replace('class="kz"','class="kz" style="width:28px;height:28px"')}${fmtBal(ACC.coins)} козырей</div>
     <div class="nm" style="font-size:15px">🏆 Побед: <b>${(ACC.st||{}).w||0}</b> · Игр: <b>${(ACC.st||{}).g||0}</b></div>
     <div class="nm">Козыри зарабатываются в игре.</div>
     <button class="btn" onclick="openLeaders()">Таблица лидеров</button>
