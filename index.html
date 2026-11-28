@@ -557,7 +557,7 @@ async function avUpload(file){
 async function avRemove(){if(ACC)try{await firebase.database().ref('avatars/'+ACC.uid).remove()}catch(e){}}
 const DEVB='<span class="devb" title="Разработчик игры">🛠 DEV</span>';
 const KZ='<svg class="kz" viewBox="0 0 40 40"><use href="#kz"/></svg>';
-function fmtBal(n){n=Math.floor(+n||0);const f=(x,d,u)=>{const v=Math.floor(x/d*10)/10;return String(v).replace('.',',')+u};return n<1000?String(n):n<1e6?f(n,1e3,'к'):f(n,1e6,'м')}
+function fmtBal(n,up){n=Math.floor(+n||0);const f=(x,d,u)=>{const v=Math.floor(x/d*10+(up?.999999:0))/10;return String(v).replace('.',',')+u};return n<1000?String(n):n<1e6?f(n,1e3,'к'):f(n,1e6,'м')}
 function coinBadge(){return ACC?`<span class="coin" onclick="openAccount('profile')" title="Козыри: ${ACC.coins}">${KZ}${fmtBal(ACC.coins)}</span>`:''}
 async function accRegister(nick,pw,pw2){
   nick=nick.trim();
@@ -720,9 +720,9 @@ function shopItem(kind,it){
     ?(on?`<button class="sbtn on" onclick="${kind==='f'?"setFrame('')":"setSkin('')"}">✓ Надето</button>`:`<button class="sbtn" onclick="${kind==='f'?`setFrame('${it.id}')`:`setSkin('${it.id}')`}">Надеть</button>`)
     :it.kz?(!ACC?`<button class="sbtn" disabled>Нужен аккаунт</button>`
       :ACC.coins>=it.kz?`<button class="sbtn" onclick="buyKz('${kind}','${it.id}')">Купить</button>`
-      :`<button class="sbtn" disabled>Не хватает ${fmtKz(it.kz-ACC.coins)}</button>`)
+      :`<button class="sbtn" disabled>Не хватает ${fmtBal(it.kz-ACC.coins,1)}</button>`)
     :`<button class="sbtn" disabled>Скоро в продаже</button>`;
-  const price=it.kz?`<span class="kzp">${KZ}${fmtKz(it.kz)}</span>`:it.p;
+  const price=it.kz?`<span class="kzp">${KZ}${fmtBal(it.kz)}</span>`:it.p;
   return `<div class="sitem${on?' on':''}">${prev}<div class="snm">${it.n}</div><div class="spr">${mine&&ACC&&ACC.dev?'🛠 доступно':(mine&&it.kz?'✓ куплено':price)}</div>${btn}</div>`;
 }
 const fmtKz=n=>String(n).replace(/\B(?=(\d{3})+(?!\d))/g,' ');
