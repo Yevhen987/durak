@@ -22,7 +22,8 @@ main{max-width:560px;margin:0 auto;padding:10px 12px 16px;display:flex;flex-dire
 .av em{position:absolute;right:-8px;bottom:-4px;background:#f5b301;color:#2b2200;font:700 12px system-ui,sans-serif;border-radius:10px;padding:1px 7px}
 .row{display:flex;flex-wrap:wrap;align-items:center}
 .row.bot{margin-left:auto;padding-right:30px;min-height:78px}.row.bot .c{margin-right:-30px}
-.hand{justify-content:center;min-height:90px;padding-top:8px}
+.hand{justify-content:center;min-height:90px;padding-top:8px;touch-action:pan-y}
+.hand button.c{transition:transform .12s ease-out,filter .12s}.hand .c.hov{transform:translateY(-18px) scale(1.14);z-index:20;box-shadow:0 0 0 2px #ffd54acc,0 10px 16px #0009}.hand .c.near{transform:translateY(-7px) scale(1.04);z-index:10}
 .hand .c+.c{margin-left:var(--ov,-26px)}
 .c{width:54px;height:78px;border-radius:7px;position:relative;box-sizing:border-box;padding:0;margin:0;font-family:Georgia,"Times New Roman",serif;overflow:hidden;flex:none}
 .c.f{background:#fff;color:var(--k);border:1px solid #0003;box-shadow:0 2px 4px #0004}
@@ -263,6 +264,19 @@ function showHint(){
   if(!o.length)return say(mode==='pDef'?'Подсказка: отбиться нечем, лучше взять карты.':mode==='pAtk'&&table.length?'Подсказка: подкинуть нечего, нажмите «Бито».':'Подсказка: подкидывать нечего.');
   hint=ck(o[0]);render();
 }
+/* hand follows finger / mouse */
+let hovEl=null,hovT=0;
+function hovClear(){document.querySelectorAll('.hand .c.hov,.hand .c.near').forEach(e=>e.classList.remove('hov','near'));hovEl=null}
+function hovAt(x,y){
+  const el=document.elementFromPoint(x,y),c=el&&el.closest&&el.closest('.hand button.c');
+  if(c===hovEl)return;hovClear();if(!c)return;hovEl=c;c.classList.add('hov');
+  const a=c.previousElementSibling,b=c.nextElementSibling;
+  if(a&&a.matches('button.c'))a.classList.add('near');if(b&&b.matches('button.c'))b.classList.add('near');
+}
+addEventListener('pointermove',e=>{clearTimeout(hovT);if(e.pointerType==='mouse'||e.buttons||e.pressure>0)hovAt(e.clientX,e.clientY)},{passive:true});
+addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse')hovAt(e.clientX,e.clientY)},{passive:true});
+['pointerup','pointercancel'].forEach(t=>addEventListener(t,e=>{if(e.pointerType!=='mouse'){clearTimeout(hovT);hovT=setTimeout(hovClear,180)}},{passive:true}));
+document.addEventListener('mouseleave',hovClear);
 let tapBusy=false;
 function tapCard(el,fn){
   if(tapBusy)return;tapBusy=true;el.classList.add('tap');
