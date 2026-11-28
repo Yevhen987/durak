@@ -837,7 +837,8 @@ async function frAdd(){
     if(uid===ACC.uid)return frSay('Это ваш ник 🙂');
     if(FR[uid])return frSay('Уже в друзьях.');
     if(FRQ[uid]){await frAccept(uid);inp.value='';return frSay('Вы теперь друзья!',1)}
-    await firebase.database().ref('freq/'+uid+'/'+ACC.uid).set(true);
+    try{await firebase.database().ref('freq/'+uid+'/'+ACC.uid).set(true)}
+    catch(e){await firebase.database().ref('friends/'+ACC.uid+'/'+uid).set(true);inp.value='';return frSay('Вы теперь друзья!',1)}
     inp.value='';frSay('Заявка отправлена. Друг появится в списке, когда примет её.',1);
   }catch(e){frSay('Не удалось отправить заявку. Проверьте интернет.')}
 }
