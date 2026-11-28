@@ -111,6 +111,12 @@ button.c.deal,.c.deal{animation:deal .42s cubic-bezier(.2,.8,.3,1) backwards}
 .coin{display:inline-flex;align-items:center;gap:6px;background:#0007;border:1px solid #f5c84255;border-radius:20px;padding:4px 12px 4px 5px;font:700 15px system-ui,sans-serif;color:#ffe08a;cursor:pointer}
 .coin .kz{width:24px;height:24px}
 .devb{display:inline-block;background:linear-gradient(90deg,#f5b301,#ff7a00);color:#2b1600;font:800 10px system-ui,sans-serif;letter-spacing:.5px;border-radius:6px;padding:2px 6px;vertical-align:1px;text-shadow:none}
+.frAdd{display:flex;gap:8px}.frAdd input{flex:1;min-width:0;font:600 16px system-ui,sans-serif;padding:9px 12px;border-radius:10px;border:0}.frAdd .sbtn{width:auto;padding:9px 14px;font-size:14px}
+.frMsg{font-size:13px;min-height:16px;margin-top:-6px}.frList{display:flex;flex-direction:column;gap:2px;text-align:left}
+.frRow{display:flex;align-items:center;gap:6px;padding:8px 4px;border-top:1px solid #fff1;font-size:15px}.frN{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.frSt{display:inline-flex;align-items:center;gap:6px;font-size:12px;opacity:.9;white-space:nowrap}.frSt i{width:12px;height:12px;border-radius:50%;display:inline-block}
+.frSt.on i{background:#35d07f;box-shadow:0 0 6px #35d07f}.frSt.off i{background:#ff3b30;box-shadow:0 0 5px #ff3b3099}
+.frDel{border:0;background:#fff1;color:#fffa;border-radius:8px;width:28px;height:28px;cursor:pointer;margin-left:4px}.box.lb.fr{width:min(400px,calc(100vw - 24px))}
 .box.lb{position:relative;min-width:300px;max-width:calc(100vw - 32px);max-height:calc(100vh - 60px);overflow:auto;box-sizing:border-box;gap:12px;padding:22px 16px}
 .lbt{border-collapse:collapse;width:100%;font-size:14px}
 .lbt th{font-size:11px;opacity:.7;font-weight:600;padding:4px 6px;text-align:left}
@@ -409,7 +415,7 @@ function render(){
   const live=mode!=='end';
   const ov=mode==='end'?`<div class="ov"><div class="box"><div class="big">${msg}</div><button class="btn" onclick="init()">Сыграть ещё</button></div></div>`:'';
   document.getElementById('app').innerHTML=
-   `<div class="hd"><b class="ttl"><img class="logo" src="${JOKER}" alt=""><span>Durak<small>${perev?'переводной':'подкидной'} · ${wins}:${losses}</small></span></b><span class="hr"><button class="mbtn lbb" onclick="openShop()" title="Магазин" aria-label="Магазин"><svg class="cart" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 3h2.6l2.3 11.2a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.5L21.4 7H6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9.5" cy="20" r="1.7" fill="currentColor"/><circle cx="17.5" cy="20" r="1.7" fill="currentColor"/></svg></button><button class="mbtn lbb" onclick="openLeaders()" title="Лидеры" aria-label="Таблица лидеров">🏆</button><button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>
+   `<div class="hd"><b class="ttl"><img class="logo" src="${JOKER}" alt=""><span>Durak<small>${perev?'переводной':'подкидной'} · ${wins}:${losses}</small></span></b><span class="hr"><button class="mbtn lbb" onclick="openShop()" title="Магазин" aria-label="Магазин"><svg class="cart" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 3h2.6l2.3 11.2a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.5L21.4 7H6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9.5" cy="20" r="1.7" fill="currentColor"/><circle cx="17.5" cy="20" r="1.7" fill="currentColor"/></svg></button><button class="mbtn lbb" onclick="openFriends()" title="Друзья" aria-label="Друзья">👥</button><button class="mbtn lbb" onclick="openLeaders()" title="Лидеры" aria-label="Таблица лидеров">🏆</button><button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>
     <div class="pl"><div class="av"><img src="${BOTAV}" alt="Бот"><em>${B.length}</em></div><div class="nm">Бот</div><div class="row bot">${botRow}</div></div>
     <div class="table">${dk}<div class="tcards">${tb||''}</div></div>
     <div class="pill">${msg}</div>
@@ -470,7 +476,10 @@ async function getAuth(){
 }
 function onAuth(user){
   if(accUnsub){accUnsub();accUnsub=null}
-  if(!user){ACC=null;authReadyRes();accRefresh();return}
+  if(!user){ACC=null;presenceStop();FR={};frRender();authReadyRes();accRefresh();return}
+  presenceStart(user.uid);
+  const fref=firebase.database().ref('friends/'+user.uid),fh=s=>{FR=s.val()||{};frRender()};
+  fref.on('value',fh,()=>{});
   const ref=firebase.database().ref('users/'+user.uid);
   const h=s=>{const v=s.val()||{};ACC={uid:user.uid,nick:v.nick||'…',coins:+v.coins||0,dev:!!ADMINS[user.uid],inv:v.inv||{},st:(ACC&&ACC.uid===user.uid&&ACC.st)||{g:0,w:0}};
     if(v.nick){try{localStorage.setItem('oname',v.nick)}catch(e){}}
@@ -478,7 +487,7 @@ function onAuth(user){
   ref.on('value',h,()=>{authReadyRes()});
   const sref=firebase.database().ref('stats/'+user.uid),sh=s=>{const v=s.val()||{};if(ACC&&ACC.uid===user.uid){ACC.st={g:+v.g||0,w:+v.w||0};accRefresh()}};
   sref.on('value',sh,()=>{});
-  accUnsub=()=>{ref.off('value',h);sref.off('value',sh)};
+  accUnsub=()=>{ref.off('value',h);sref.off('value',sh);fref.off('value',fh)};
 }
 function accRefresh(){
   try{applySkin()}catch(e){}
@@ -753,11 +762,77 @@ function openShop(){
     <div class="nm" style="font-size:12px">${ACC&&ACC.dev?'Аккаунт разработчика: все товары доступны для проверки.':'Простые рамки — за козыри (+'+WIN_KZ+' за победу над живыми игроками). Рамки с картинками — за реальные деньги, скоро.'}${!ACC?' Для покупок нужен аккаунт.':''}</div></div>`;
   const g=d.querySelector('.shopgrid');if(g&&keep)g.scrollTop=keep;
 }
+/* ===== FRIENDS + ONLINE STATUS ===== */
+let presRef=null,presCon=null,presCb=null,FR={};
+const PRES={},PRW={},FNICK={};
+function presenceStart(uid){
+  presenceStop();if(!window.firebase)return;
+  const db=firebase.database();presRef=db.ref('presence/'+uid);presCon=db.ref('.info/connected');
+  const r=presRef;presCb=s=>{if(s.val()===true)r.onDisconnect().remove().then(()=>r.set(true)).catch(()=>{})};
+  presCon.on('value',presCb);
+}
+function presenceStop(){
+  if(presCon){presCon.off('value',presCb);presCon=null}
+  if(presRef){const r=presRef;presRef=null;r.onDisconnect().cancel().catch(()=>{});r.remove().catch(()=>{})}
+}
+function presWatch(uid){
+  if(PRW[uid]||!window.firebase)return;PRW[uid]=1;
+  firebase.database().ref('presence/'+uid).on('value',s=>{const on=s.val()===true;if(PRES[uid]===on)return;PRES[uid]=on;frRender()},()=>{});
+}
+async function frNick(uid){
+  if(uid in FNICK)return;FNICK[uid]='';
+  try{FNICK[uid]=(await firebase.database().ref('users/'+uid+'/nick').get()).val()||'?'}catch(e){FNICK[uid]='?'}
+  frRender();
+}
+function openFriends(){
+  closeMenu();closeAccount();
+  const d=document.createElement('div');d.className='ov';d.id='accov';d.dataset.view='friends';
+  d.onclick=e=>{if(e.target===d)closeAccount()};
+  d.innerHTML=`<div class="box lb fr"><button class="ic" style="position:absolute;right:10px;top:10px;margin:0" onclick="closeAccount()" aria-label="Закрыть">✕</button>
+    <div class="big">👥 Друзья</div>
+    ${ACC?`<div class="frAdd"><input id="frIn" placeholder="Ник друга" maxlength="12" autocomplete="off" onkeydown="if(event.key==='Enter')frAdd()"><button class="sbtn" onclick="frAdd()">Добавить</button></div><div class="nm frMsg" id="frMsg"></div>`:''}
+    <div id="frL"></div></div>`;
+  document.body.appendChild(d);frRender();
+}
+function frRender(){
+  const d=document.getElementById('accov');if(!d||d.dataset.view!=='friends')return;
+  const L=d.querySelector('#frL');if(!L)return;
+  if(!ACC){L.innerHTML=`<div class="nm" style="font-size:15px">Войдите в аккаунт, чтобы добавлять друзей.</div><button class="btn" onclick="openAccount()">Аккаунт</button>`;return}
+  const ids=Object.keys(FR);
+  if(!ids.length){L.innerHTML=`<div class="nm" style="font-size:14px;opacity:.8">Пока нет друзей. Введите ник игрока и нажмите «Добавить».</div>`;return}
+  ids.forEach(u=>{presWatch(u);if(!(u in FNICK))frNick(u)});
+  ids.sort((a,b)=>(PRES[b]?1:0)-(PRES[a]?1:0)||String(FNICK[a]||'').localeCompare(String(FNICK[b]||'')));
+  const on=ids.filter(u=>PRES[u]).length;
+  L.innerHTML=`<div class="nm" style="font-size:12px;opacity:.7;text-align:left">Онлайн: ${on} из ${ids.length}</div><div class="frList">${ids.map(u=>`<div class="frRow">
+    <span class="lbav">${avImg(u,'🙂')}</span><span class="frN">${esc(FNICK[u]||'…')}${ADMINS[u]?' '+DEVB:''}</span>
+    <span class="frSt ${PRES[u]?'on':'off'}"><i></i>${PRES[u]?'онлайн':'не в сети'}</span>
+    <button class="frDel" onclick="frDel('${u}')" title="Удалить из друзей" aria-label="Удалить">✕</button></div>`).join('')}</div>`;
+}
+async function frAdd(){
+  const inp=document.getElementById('frIn'),msg=document.getElementById('frMsg');if(!inp||!ACC)return;
+  const say=(t,ok)=>{if(msg){msg.textContent=t;msg.style.color=ok?'#35d07f':'#ff8a80'}};
+  const nick=inp.value.trim();if(!nick)return say('Введите ник.');
+  if(Object.keys(FR).length>=50)return say('Максимум 50 друзей.');
+  try{
+    const a=(await firebase.database().ref('accounts/'+nickId(nick)).get()).val();
+    const uid=a&&a.uid;
+    if(!uid)return say('Игрок «'+nick+'» не найден.');
+    if(uid===ACC.uid)return say('Это ваш ник 🙂');
+    if(FR[uid])return say('Уже в друзьях.');
+    await firebase.database().ref('friends/'+ACC.uid+'/'+uid).set(true);
+    inp.value='';say('Добавлен в друзья!',1);
+  }catch(e){say('Не удалось добавить. Проверьте интернет.')}
+}
+async function frDel(uid){
+  if(!ACC||!window.confirm('Удалить '+(FNICK[uid]||'игрока')+' из друзей?'))return;
+  try{await firebase.database().ref('friends/'+ACC.uid+'/'+uid).remove()}catch(e){}
+}
 /* ===== MENU ===== */
 const TCN={green:'зелёный',blue:'синий',red:'красный',purple:'фиолетовый',gray:'графит'};
 function menuItems(){
   const common=[
     ['👤','Аккаунт',ACC?ACC.nick:'гость','openAccount()',1],
+    ['👥','Друзья',ACC?Object.keys(FR).filter(u=>PRES[u]).length+' онлайн':'нужен аккаунт','openFriends()',1],
     ['🏆','Лидеры','по победам','openLeaders()',1],
     ['🎨','Цвет стола',TCN[TC[tcol]],'setTable()',0],
     ['🖼️','Фон',bgi<0?'без фона':BGS[bgi][1],'setBg()',0],
@@ -1084,7 +1159,7 @@ function oRender(){
   <div class="pl"><div class="avc"><div class="av${myCls}${frCls(g.u[me])}">${avImg(g.u[me],EM[me])}${frImg(frameOf(g.u[me]))}<em>${mine.length}</em></div>${ACC&&ACC.uid===g.u[me]?coinBadge():''}</div><div class="nm">${esc(pn(g,me))} (вы)${ADMINS[g.u[me]]?' '+DEVB:''}${status(me)?' · '+status(me):''}</div></div>
   <div class="row hand" style="--ov:${ovl}px">${hand}</div>${end}`;
   }
-  $a().innerHTML=`<div class="hd"><b>🌐 Durak Online<small>${g.perev?'переводной':'подкидной'} · ${g.np} игрока · код ${ocode}${g.u.every(x=>x)&&new Set(g.u).size===g.np?' · 🏆 рейтинговая':''}</small></b><span class="hr"><button class="mbtn lbb" onclick="openShop()" title="Магазин" aria-label="Магазин"><svg class="cart" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 3h2.6l2.3 11.2a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.5L21.4 7H6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9.5" cy="20" r="1.7" fill="currentColor"/><circle cx="17.5" cy="20" r="1.7" fill="currentColor"/></svg></button><button class="mbtn lbb" onclick="openLeaders()" title="Лидеры" aria-label="Таблица лидеров">🏆</button><button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>${body}`;
+  $a().innerHTML=`<div class="hd"><b>🌐 Durak Online<small>${g.perev?'переводной':'подкидной'} · ${g.np} игрока · код ${ocode}${g.u.every(x=>x)&&new Set(g.u).size===g.np?' · 🏆 рейтинговая':''}</small></b><span class="hr"><button class="mbtn lbb" onclick="openShop()" title="Магазин" aria-label="Магазин"><svg class="cart" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 3h2.6l2.3 11.2a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.5L21.4 7H6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9.5" cy="20" r="1.7" fill="currentColor"/><circle cx="17.5" cy="20" r="1.7" fill="currentColor"/></svg></button><button class="mbtn lbb" onclick="openFriends()" title="Друзья" aria-label="Друзья">👥</button><button class="mbtn lbb" onclick="openLeaders()" title="Лидеры" aria-label="Таблица лидеров">🏆</button><button class="mbtn" onclick="openMenu()">☰ Меню</button></span></div>${body}`;
 }
 async function oResume(){
   let v;try{v=localStorage.getItem('osess')}catch(e){}
