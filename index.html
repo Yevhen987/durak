@@ -38,6 +38,7 @@ button.c{cursor:pointer;transition:transform .12s,filter .12s}
 .c.ok{box-shadow:0 0 0 2px #ffd54a,0 5px 9px #0006;transform:translateY(-6px)}
 .c.no{filter:brightness(.72)}
 button.c:active{transform:translateY(-12px)}
+.hand .c.tap,button.c.tap{transform:translateY(-26px) scale(1.28)!important;z-index:30;box-shadow:0 0 0 3px #ffd54a,0 12px 20px #000b;filter:none;transition:transform .15s ease-out,box-shadow .15s}
 .table{display:flex;gap:8px;align-items:flex-start;min-height:214px;padding:14px 10px;border:6px solid var(--wood);border-radius:20px;background:radial-gradient(ellipse at center,var(--felt1),var(--felt2) 75%);box-shadow:inset 0 0 36px #0008,0 8px 18px #0006}
 .tcards{flex:1;display:flex;flex-wrap:wrap;gap:10px;align-content:flex-start;justify-content:center}
 .empty{opacity:.5;align-self:center;font-size:14px;padding-top:70px}
@@ -262,6 +263,11 @@ function showHint(){
   if(!o.length)return say(mode==='pDef'?'Подсказка: отбиться нечем, лучше взять карты.':mode==='pAtk'&&table.length?'Подсказка: подкинуть нечего, нажмите «Бито».':'Подсказка: подкидывать нечего.');
   hint=ck(o[0]);render();
 }
+let tapBusy=false;
+function tapCard(el,fn){
+  if(tapBusy)return;tapBusy=true;el.classList.add('tap');
+  setTimeout(()=>{tapBusy=false;try{fn()}finally{setTimeout(()=>el.isConnected&&el.classList.remove('tap'),120)}},170);
+}
 function play(i){hint='';
   const c=P[i];
   if(!c)return;
@@ -409,7 +415,7 @@ function render(){
   shown=new Set(table.flatMap(t=>t.d?[ck(t.a),ck(t.d)]:[ck(t.a)]));
   const act=['pAtk','pDef','bTake'].includes(mode);
   const dl=dealCls(P,handSeen);
-  const hand=P.map((c,i)=>face(c,(ck(c)===hint?'hl ':'')+dl[i][0],'button',`onclick="play(${i})"${dl[i][1]}`)).join('');
+  const hand=P.map((c,i)=>face(c,(ck(c)===hint?'hl ':'')+dl[i][0],'button',`onclick="tapCard(this,()=>play(${i}))"${dl[i][1]}`)).join('');
   const botRow=oppRow(B.length,Math.min(oppSeen,B.length));oppSeen=B.length;
   const red=trump.s===1||trump.s===2;
   const tr=deck.length?face(trump,'tr'):`<div class="c f s${trump.s} tr dim"><svg class="mid" viewBox="0 0 24 24"><use href="#p${trump.s}"/></svg></div>`;
@@ -1208,7 +1214,7 @@ function oRender(){
       !g.table.length?'Ходит '+an+'…':g.take?dn+' берёт карты.':dn+' отбивается…';
     const srt=mine.map((c,i)=>({c,i})).sort((x,y)=>oV(x.c)-oV(y.c));
     const odl=dealCls(srt.map(x=>x.c),oHandSeen);
-    const hand=srt.map(({c,i},k)=>face(c,odl[k][0],'button',`onclick="oPlay(${i})"${odl[k][1]}`)).join('');
+    const hand=srt.map(({c,i},k)=>face(c,odl[k][0],'button',`onclick="tapCard(this,()=>oPlay(${i}))"${odl[k][1]}`)).join('');
     const ovl=mine.length>1?Math.max(-36,Math.min(-26,(Math.min(innerWidth,560)-24-54)/(mine.length-1)-54)):-26;
     const score=seats(g).map(i=>`${esc(pn(g,i))} ${g.sc[i]}`).join(' · ');
     const endTxt=g.end==='draw'?'Ничья!':+g.end===me?'Вы остались дураком.':g.np===2?'Вы выиграли! 🎉':'Вы не дурак! 🎉<div class="nm" style="font-size:16px;margin-top:8px">Дурак: '+esc(pn(g,+g.end))+'</div>';
