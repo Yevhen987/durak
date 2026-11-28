@@ -490,10 +490,12 @@ function accRefresh(){
 async function recordResult(win){
   if(!ACC||!window.firebase)return;
   try{
-    const ref=firebase.database().ref('stats/'+ACC.uid),cur=(await ref.get()).val()||{};
-    await ref.set({n:ACC.nick,g:(+cur.g||0)+1,w:(+cur.w||0)+(win?1:0),t:firebase.database.ServerValue.TIMESTAMP});
+    const db=firebase.database(),cur=(await db.ref('stats/'+ACC.uid).get()).val()||{};
+    const up={['stats/'+ACC.uid]:{n:ACC.nick,g:(+cur.g||0)+1,w:(+cur.w||0)+(win?1:0),t:firebase.database.ServerValue.TIMESTAMP}};
+    if(win){const c=(await db.ref('users/'+ACC.uid+'/coins').get()).val();up['users/'+ACC.uid+'/coins']=(+c||0)+WIN_KZ}
+    await db.ref().update(up);
+    if(win)toastKz('+'+WIN_KZ);
   }catch(e){}
-  if(win){try{await firebase.database().ref('users/'+ACC.uid+'/coins').transaction(c=>(+c||0)+WIN_KZ);toastKz('+'+WIN_KZ)}catch(e){}}
 }
 async function openLeaders(){
   closeMenu();closeAccount();
@@ -731,10 +733,8 @@ async function buyKz(kind,id){
   if(!confirmBuy(it))return;
   const key=kind+'_'+id;let ok=false;
   try{
-    const r=await firebase.database().ref('users/'+ACC.uid).transaction(u=>{
-      if(!u)return u;const c=+u.coins||0;if(c<it.kz||(u.inv&&u.inv[key]))return;
-      u.coins=c-it.kz;u.inv=u.inv||{};u.inv[key]=true;return u});
-    ok=r.committed;
+    const ref=firebase.database().ref('users/'+ACC.uid),c=+(await ref.child('coins').get()).val()||0;
+    if(c>=it.kz){await ref.update({coins:c-it.kz,['inv/'+key]:true});ok=true}
   }catch(e){}
   if(ok){ACC.inv=Object.assign({},ACC.inv,{[key]:true});if(kind==='f')setFrame(id);else setSkin(id)}
   else openShop();
